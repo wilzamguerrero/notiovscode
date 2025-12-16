@@ -14,29 +14,37 @@ app.use(express.json()); // Para parsear JSON en el body
 
 const PORT = 3000;
 
-// Almacenamiento temporal de sesiones (en producción usar Redis o similar)
-const sessions = new Map();
+// ELIMINAMOS: const sessions = new Map(); ya no usaremos memoria volátil
 
-// Middleware para validar sesión
+// Middleware para validar sesión (AHORA STATELESS)
 function validateSession(req, res, next) {
   const sessionId = req.headers['x-session-id'];
   
-  if (!sessionId || !sessions.has(sessionId)) {
+  if (!sessionId) {
     return res.status(401).json({ error: 'No autorizado. Por favor inicie sesión.' });
   }
-  
-  const session = sessions.get(sessionId);
-  req.notion = session.notion;
-  req.pageId = session.pageId;
-  next();
+
+  try {
+    // Decodificar el token (formato base64 de pageId:secret)
+    const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
+    const [pageId, ...secretParts] = decoded.split(':');
+    const notionSecret = secretParts.join(':'); // Por si el secreto tiene ':'
+
+    if (!pageId || !notionSecret) {
+      throw new Error('Token inválido');
+    }
+
+    // Instanciar cliente de Notion en cada petición (Serverless friendly)
+    req.notion = new Client({ auth: notionSecret });
+    req.pageId = pageId;
+    req.notionSecret = notionSecret; // Guardamos para uso en endpoints
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+  }
 }
 
-// Generar ID de sesión único
-function generateSessionId() {
-  return 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-}
-
-// Endpoint de login
+// Endpoint de login (MODIFICADO)
 app.post("/api/login", async (req, res) => {
   const { notionSecret, pageId } = req.body;
   
@@ -57,22 +65,11 @@ app.post("/api/login", async (req, res) => {
       page_size: 1 
     });
     
-    // Credenciales válidas, crear sesión
-    const sessionId = generateSessionId();
-    sessions.set(sessionId, {
-      notion,
-      notionSecret, // ← AGREGAR: Guardar el token para subida directa
-      pageId,
-      createdAt: Date.now()
-    });
-    
-    // Limpiar sesiones antiguas (más de 24 horas)
-    const maxAge = 24 * 60 * 60 * 1000;
-    for (const [id, session] of sessions.entries()) {
-      if (Date.now() - session.createdAt > maxAge) {
-        sessions.delete(id);
-      }
-    }
+    // Credenciales válidas.
+    // En lugar de guardar en memoria, creamos un token base64 con los datos.
+    // Esto permite que funcione en Vercel sin base de datos.
+    const tokenData = `${pageId}:${notionSecret}`;
+    const sessionId = Buffer.from(tokenData).toString('base64');
     
     res.json({ 
       success: true, 
@@ -89,26 +86,39 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Endpoint de logout
+// Endpoint de logout (MODIFICADO)
 app.post("/api/logout", (req, res) => {
-  const sessionId = req.headers['x-session-id'];
-  
-  if (sessionId && sessions.has(sessionId)) {
-    sessions.delete(sessionId);
-  }
-  
+  // Al ser stateless, no hay nada que borrar en el servidor
   res.json({ success: true, message: 'Sesión cerrada' });
 });
 
-// Verificar sesión
+// Verificar sesión (MODIFICADO)
 app.get("/api/verify-session", (req, res) => {
   const sessionId = req.headers['x-session-id'];
   
-  if (sessionId && sessions.has(sessionId)) {
+  if (!sessionId) {
+    return res.json({ valid: false });
+  }
+
+  try {
+    // Intentamos decodificar para ver si el formato es correcto
+    const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
+    if (!decoded.includes(':')) return res.json({ valid: false });
+    
+    // Si llegamos aquí, asumimos que es válido (la validación real ocurre al pedir datos)
     res.json({ valid: true });
-  } else {
+  } catch (e) {
     res.json({ valid: false });
   }
+});
+
+// Endpoint: Obtener credenciales (MODIFICADO)
+app.get("/api/get-credentials", validateSession, (req, res) => {
+  // Ya tenemos los datos en req gracias al middleware
+  res.json({ 
+    notionSecret: req.notionSecret,
+    pageId: req.pageId
+  });
 });
 
 // Función recursiva hasta 4 niveles
@@ -604,21 +614,6 @@ app.post("/api/upload-url", validateSession, async (req, res) => {
     console.error('Error agregando URL:', error);
     res.status(500).json({ error: 'Error al guardar la URL' });
   }
-});
-
-// Endpoint: Obtener credenciales (para subida directa desde el navegador)
-app.get("/api/get-credentials", validateSession, (req, res) => {
-  const sessionId = req.headers['x-session-id'];
-  const session = sessions.get(sessionId);
-  
-  if (!session || !session.notionSecret) {
-    return res.status(401).json({ error: 'Sesión no válida o credenciales no disponibles' });
-  }
-  
-  res.json({ 
-    notionSecret: session.notionSecret,
-    pageId: session.pageId
-  });
 });
 
 // Archivos estáticos

@@ -344,8 +344,7 @@
       <form id="loginForm">
         <div class="form-group">
           <div class="form-label-row">
-            <label class="form-label">Token de Integración</label>
-            <a href="https://www.notion.so/my-integrations" target="_blank" rel="noreferrer" class="form-link">Obtener Token</a>
+            <label class="form-label">Credenciales de Acceso</label>
           </div>
           <div class="form-input-wrapper">
             <svg class="form-input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -353,32 +352,13 @@
             </svg>
             <input 
               type="password" 
-              id="notionSecret" 
+              id="credentialsInput" 
               class="form-input" 
-              placeholder="secret_..."
+              placeholder="PageID_Token"
               required
             />
           </div>
-        </div>
-
-        <div class="form-group">
-          <div class="form-label-row">
-            <label class="form-label">ID de Página o URL</label>
-          </div>
-          <div class="form-input-wrapper">
-            <svg class="form-input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-            <input 
-              type="text" 
-              id="pageId" 
-              class="form-input" 
-              placeholder="1cd2640c... o URL completa"
-              required
-            />
-          </div>
-          <p class="form-hint">Puedes pegar la URL completa de la página de Notion</p>
+          <p class="form-hint">Formato: ID_DE_PAGINA_secret_xxxx...</p>
         </div>
 
         <div class="info-box">
@@ -462,19 +442,32 @@
       
       const btn = document.getElementById('loginBtn');
       const errorBox = document.getElementById('errorBox');
-      const notionSecret = document.getElementById('notionSecret').value.trim();
-      const pageIdInput = document.getElementById('pageId').value.trim();
+      const credentials = document.getElementById('credentialsInput').value.trim();
       
-      // Extraer Page ID
-      const pageId = extractPageId(pageIdInput);
-      
-      if (!notionSecret || !pageId) {
-        errorBox.textContent = 'Por favor completa todos los campos';
+      if (!credentials) {
+        errorBox.textContent = 'Por favor ingresa las credenciales';
         errorBox.classList.add('show');
         return;
       }
 
-      // Validar formato básico del secret
+      // Lógica de separación (PageID_Token)
+      // Usamos el primer guion bajo como separador
+      const parts = credentials.split('_');
+      
+      if (parts.length < 2) {
+        errorBox.textContent = 'Formato inválido. Usa: PageID_Token';
+        errorBox.classList.add('show');
+        return;
+      }
+
+      const pageIdRaw = parts[0].trim();
+      // Unimos el resto por si el token contiene guiones bajos (ej: secret_...)
+      const notionSecret = parts.slice(1).join('_').trim();
+      
+      // Limpiar ID (quitar guiones si los tiene el usuario en la primera parte)
+      const pageId = pageIdRaw.replace(/-/g, '');
+
+      // Validar formato básico
       if (!notionSecret.startsWith('secret_') && !notionSecret.startsWith('ntn_')) {
         errorBox.textContent = 'El token debe comenzar con "secret_" o "ntn_"';
         errorBox.classList.add('show');
@@ -496,7 +489,7 @@
         const data = await res.json();
 
         if (data.success) {
-          // Guardar sesión
+          // Guardar sesión (ahora es el token stateless)
           sessionStorage.setItem('notionSessionId', data.sessionId);
           
           // Redirigir a la app principal
