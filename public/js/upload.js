@@ -1,224 +1,270 @@
 /**
- * Sistema de Upload de archivos a Notion
- * Usa subida directa desde el navegador (como notiopinterest)
+ * Sistema de Upload de archivos a Notion (REDISEÑADO)
  */
 
 let uploadFiles = [];
 let uploadPreviews = [];
 let activeUploadTab = 'file';
+let selectedBoardId = null;
+let treeData = []; // Datos del árbol en memoria
 
 // Configuración del proxy CORS
 const CORS_PROXY = 'https://corsproxy.io/?';
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 const NOTION_VERSION = '2022-06-28';
 
-/**
- * Inicializar el sistema de upload
- */
 function initUploadSystem() {
   const openBtn = document.getElementById('openUploadBtn');
   const closeBtn = document.getElementById('closeUploadModal');
   const overlay = document.querySelector('.upload-modal-overlay');
-  const modal = document.getElementById('uploadModal');
   
-  // Abrir modal
-  if (openBtn) {
-    openBtn.addEventListener('click', openUploadModal);
-  }
-  
-  // Cerrar modal
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeUploadModal);
-  }
-  
-  if (overlay) {
-    overlay.addEventListener('click', closeUploadModal);
-  }
+  if (openBtn) openBtn.addEventListener('click', openUploadModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeUploadModal);
+  if (overlay) overlay.addEventListener('click', closeUploadModal);
   
   // Tabs
-  document.querySelectorAll('.upload-tab').forEach(tab => {
+  document.querySelectorAll('.upload-tab-modern').forEach(tab => {
     tab.addEventListener('click', () => switchUploadTab(tab.dataset.tab));
   });
   
   // File input
   const fileInput = document.getElementById('fileInput');
-  if (fileInput) {
-    fileInput.addEventListener('change', handleFileSelect);
-  }
+  if (fileInput) fileInput.addEventListener('change', handleFileSelect);
   
   // Dropzone
   const dropzone = document.getElementById('uploadDropzone');
   if (dropzone) {
-    dropzone.addEventListener('dragover', handleDragOver);
-    dropzone.addEventListener('dragleave', handleDragLeave);
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
     dropzone.addEventListener('drop', handleDrop);
   }
   
   // Paste handler
   document.addEventListener('paste', handlePaste);
   
-  // URL input
-  const urlInput = document.getElementById('urlInput');
-  if (urlInput) {
-    urlInput.addEventListener('input', validateUploadForm);
-  }
-  
-  // Caption input
-  const captionInput = document.getElementById('uploadCaption');
-  if (captionInput) {
-    captionInput.addEventListener('input', validateUploadForm);
-  }
-  
-  // Submit button
+  // Submit
   const submitBtn = document.getElementById('submitUpload');
-  if (submitBtn) {
-    submitBtn.addEventListener('click', handleUploadSubmit);
-  }
-  
-  // Nueva carpeta
-  const createNewToggleBtn = document.getElementById('createNewToggle');
-  if (createNewToggleBtn) {
-    createNewToggleBtn.addEventListener('click', showNewToggleInput);
-  }
-  
-  const confirmNewToggleBtn = document.getElementById('confirmNewToggle');
-  if (confirmNewToggleBtn) {
-    confirmNewToggleBtn.addEventListener('click', createNewToggle);
-  }
-  
-  const cancelNewToggleBtn = document.getElementById('cancelNewToggle');
-  if (cancelNewToggleBtn) {
-    cancelNewToggleBtn.addEventListener('click', hideNewToggleInput);
-  }
-  
-  // Destination select
-  const destSelect = document.getElementById('uploadDestination');
-  if (destSelect) {
-    destSelect.addEventListener('change', validateUploadForm);
-  }
+  if (submitBtn) submitBtn.addEventListener('click', handleUploadSubmit);
+
+  // URL Input validation
+  const urlInput = document.getElementById('urlInput');
+  if (urlInput) urlInput.addEventListener('input', validateUploadForm);
 }
 
-/**
- * Abrir modal de upload
- */
 async function openUploadModal() {
   const modal = document.getElementById('uploadModal');
   modal.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   
-  // Cargar destinos disponibles
-  await loadUploadDestinations();
+  // Cargar árbol
+  await loadUploadTree();
   
   // Reset form
   resetUploadForm();
 }
 
-/**
- * Cerrar modal de upload
- */
 function closeUploadModal() {
   const modal = document.getElementById('uploadModal');
   modal.classList.add('hidden');
   document.body.style.overflow = '';
   
-  // Limpiar previews
-  uploadPreviews.forEach(url => URL.revokeObjectURL(url));
+  // Limpiar
+  uploadPreviews.forEach(p => URL.revokeObjectURL(p.url));
   uploadFiles = [];
   uploadPreviews = [];
 }
 
-/**
- * Cargar destinos (toggles) disponibles
- */
-async function loadUploadDestinations() {
-  const select = document.getElementById('uploadDestination');
-  select.innerHTML = '<option value="">Cargando...</option>';
+// --- LÓGICA DEL ÁRBOL ---
+
+async function loadUploadTree() {
+  const container = document.getElementById('uploadTreeContainer');
+  container.innerHTML = '<div class="text-gray-500 text-sm p-4">Cargando carpetas...</div>';
   
   try {
+    // Reusamos el endpoint existente
     const res = await authFetch('/notion/get-quick-tree');
-    if (!res.ok) throw new Error('Error cargando destinos');
+    if (!res.ok) throw new Error('Error cargando árbol');
     
-    const data = await res.json();
-    const toggles = data.data || data;
+    const json = await res.json();
+    treeData = json.data || json;
     
-    select.innerHTML = '<option value="">Selecciona una carpeta...</option>';
-    
-    toggles.forEach(toggle => {
-      const option = document.createElement('option');
-      option.value = toggle.id;
-      // Limpiar asteriscos del título
-      const title = toggle.title.startsWith('*') 
-        ? toggle.title.substring(1).trim() 
-        : toggle.title;
-      option.textContent = title;
-      select.appendChild(option);
-    });
-    
+    renderUploadTree();
   } catch (error) {
-    console.error('Error cargando destinos:', error);
-    select.innerHTML = '<option value="">Error al cargar</option>';
+    console.error(error);
+    container.innerHTML = '<div class="text-red-500 text-sm p-4">Error al cargar carpetas</div>';
   }
 }
 
-/**
- * Cambiar tab de upload
- */
-function switchUploadTab(tabName) {
-  activeUploadTab = tabName;
+function renderUploadTree() {
+  const container = document.getElementById('uploadTreeContainer');
+  container.innerHTML = '';
   
-  // Actualizar tabs
-  document.querySelectorAll('.upload-tab').forEach(tab => {
-    tab.classList.toggle('active', tab.dataset.tab === tabName);
+  // Renderizar nodo raíz (Main Page)
+  const rootNode = document.createElement('div');
+  // Usamos un ID especial para la raíz si queremos permitir subir ahí, 
+  // o forzamos a seleccionar un hijo. En este caso, permitimos raíz.
+  // Pero Notion API necesita un block_id. Asumimos que el usuario selecciona carpetas existentes.
+  
+  // Renderizar lista recursiva
+  treeData.forEach(node => {
+    container.appendChild(createTreeNodeElement(node, 0));
   });
+}
+
+function createTreeNodeElement(node, depth) {
+  const wrapper = document.createElement('div');
   
-  // Mostrar contenido
-  document.getElementById('tabFile').classList.toggle('hidden', tabName !== 'file');
-  document.getElementById('tabUrl').classList.toggle('hidden', tabName !== 'url');
+  // 1. El elemento del nodo
+  const nodeEl = document.createElement('div');
+  nodeEl.className = `upload-tree-node ${selectedBoardId === node.id ? 'selected' : ''}`;
+  nodeEl.style.paddingLeft = `${depth * 16 + 12}px`;
+  nodeEl.dataset.id = node.id;
   
+  // Título limpio
+  const title = node.title.startsWith('*') ? node.title.substring(1).trim() : node.title;
+  const hasChildren = node.children && node.children.length > 0;
+  
+  nodeEl.innerHTML = `
+    <div class="node-content">
+      <div class="node-arrow">
+        ${hasChildren ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>' : ''}
+      </div>
+      <svg class="node-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      <span class="node-title">${title}</span>
+    </div>
+    <button class="add-folder-btn" title="Nueva subcarpeta">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+    </button>
+  `;
+
+  // Evento Click: Seleccionar
+  nodeEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectBoard(node.id);
+    // Toggle expandir si tiene hijos
+    if (hasChildren) {
+      const childrenContainer = wrapper.querySelector('.children-container');
+      if (childrenContainer) {
+        childrenContainer.classList.toggle('hidden');
+        const arrow = nodeEl.querySelector('.node-arrow svg');
+        if (arrow) arrow.style.transform = childrenContainer.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)';
+      }
+    }
+  });
+
+  // Evento Click: Crear Carpeta
+  const addBtn = nodeEl.querySelector('.add-folder-btn');
+  addBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showCreateFolderInput(wrapper, node.id, depth + 1);
+    // Expandir para ver el input
+    const childrenContainer = wrapper.querySelector('.children-container');
+    if (childrenContainer) {
+      childrenContainer.classList.remove('hidden');
+      const arrow = nodeEl.querySelector('.node-arrow svg');
+      if (arrow) arrow.style.transform = 'rotate(90deg)';
+    }
+  });
+
+  wrapper.appendChild(nodeEl);
+
+  // 2. Contenedor de hijos
+  const childrenContainer = document.createElement('div');
+  childrenContainer.className = 'children-container hidden'; // Colapsado por defecto
+  
+  if (hasChildren) {
+    node.children.forEach(child => {
+      childrenContainer.appendChild(createTreeNodeElement(child, depth + 1));
+    });
+  }
+  
+  wrapper.appendChild(childrenContainer);
+  return wrapper;
+}
+
+function selectBoard(id) {
+  selectedBoardId = id;
+  // Actualizar visualmente
+  document.querySelectorAll('.upload-tree-node').forEach(el => {
+    if (el.dataset.id === id) el.classList.add('selected');
+    else el.classList.remove('selected');
+  });
   validateUploadForm();
 }
 
-/**
- * Manejar selección de archivos
- */
+function showCreateFolderInput(parentWrapper, parentId, depth) {
+  // Verificar si ya existe un input abierto
+  if (parentWrapper.querySelector('.new-folder-form')) return;
+
+  let childrenContainer = parentWrapper.querySelector('.children-container');
+  // Si no existe contenedor de hijos (porque no tenía hijos), crearlo
+  if (!childrenContainer) {
+    childrenContainer = document.createElement('div');
+    childrenContainer.className = 'children-container';
+    parentWrapper.appendChild(childrenContainer);
+  }
+  childrenContainer.classList.remove('hidden');
+
+  const form = document.createElement('form');
+  form.className = 'new-folder-form';
+  form.style.paddingLeft = `${depth * 16 + 12}px`;
+  form.innerHTML = `
+    <input type="text" class="new-folder-input" placeholder="Nombre carpeta..." autoFocus />
+    <button type="submit" class="text-green-400 hover:text-white"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+    <button type="button" class="cancel-btn text-red-400 hover:text-white"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+  `;
+
+  const input = form.querySelector('input');
+  const cancelBtn = form.querySelector('.cancel-btn');
+
+  cancelBtn.onclick = () => form.remove();
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const title = input.value.trim();
+    if (!title) return;
+
+    input.disabled = true;
+    try {
+      const res = await authFetch('/api/create-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, parentId })
+      });
+      
+      if (!res.ok) throw new Error('Error creando carpeta');
+      
+      // Recargar árbol completo para simplificar
+      await loadUploadTree();
+      // Opcional: Auto-seleccionar la nueva carpeta (requeriría buscarla en el nuevo árbol)
+      
+    } catch (err) {
+      console.error(err);
+      alert('Error al crear carpeta');
+      input.disabled = false;
+      input.focus();
+    }
+  };
+
+  // Insertar al principio de la lista de hijos
+  childrenContainer.insertBefore(form, childrenContainer.firstChild);
+  input.focus();
+}
+
+// --- MANEJO DE ARCHIVOS ---
+
 function handleFileSelect(e) {
   const files = Array.from(e.target.files);
   addFiles(files);
 }
 
-/**
- * Manejar drag over
- */
-function handleDragOver(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  e.currentTarget.classList.add('dragover');
-}
-
-/**
- * Manejar drag leave
- */
-function handleDragLeave(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  e.currentTarget.classList.remove('dragover');
-}
-
-/**
- * Manejar drop
- */
 function handleDrop(e) {
   e.preventDefault();
-  e.stopPropagation();
   e.currentTarget.classList.remove('dragover');
-  
   const files = Array.from(e.dataTransfer.files);
   addFiles(files);
 }
 
-/**
- * Manejar paste
- */
 function handlePaste(e) {
   const modal = document.getElementById('uploadModal');
   if (modal.classList.contains('hidden')) return;
@@ -230,256 +276,143 @@ function handlePaste(e) {
   }
 }
 
-/**
- * Agregar archivos a la lista
- */
 function addFiles(newFiles) {
-  const validFiles = newFiles.filter(f => 
-    f.type.startsWith('image/') || f.type.startsWith('video/')
-  );
+  const validFiles = newFiles.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
   
   validFiles.forEach(file => {
     uploadFiles.push(file);
-    const previewUrl = URL.createObjectURL(file);
-    uploadPreviews.push(previewUrl);
+    uploadPreviews.push({
+      url: URL.createObjectURL(file),
+      type: file.type.startsWith('video/') ? 'video' : 'image'
+    });
   });
   
   renderFilePreviews();
   validateUploadForm();
 }
 
-/**
- * Remover archivo de la lista
- */
-function removeFile(index) {
-  URL.revokeObjectURL(uploadPreviews[index]);
-  uploadFiles.splice(index, 1);
-  uploadPreviews.splice(index, 1);
-  
-  renderFilePreviews();
-  validateUploadForm();
-}
-
-/**
- * Renderizar previews de archivos
- */
 function renderFilePreviews() {
   const grid = document.getElementById('filePreviewGrid');
   grid.innerHTML = '';
   
-  uploadPreviews.forEach((src, index) => {
-    const file = uploadFiles[index];
-    const isVideo = file.type.startsWith('video/');
+  uploadPreviews.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'relative aspect-square rounded-lg overflow-hidden border border-white/10 bg-black/40 group';
     
-    const item = document.createElement('div');
-    item.className = 'upload-preview-item';
-    
-    if (isVideo) {
-      const video = document.createElement('video');
-      video.src = src;
-      video.muted = true;
-      item.appendChild(video);
+    if (item.type === 'video') {
+      div.innerHTML = `<video src="${item.url}" class="w-full h-full object-cover" muted></video>`;
+      // Play on hover logic could go here
     } else {
-      const img = document.createElement('img');
-      img.src = src;
-      img.alt = file.name;
-      item.appendChild(img);
+      div.innerHTML = `<img src="${item.url}" class="w-full h-full object-cover" />`;
     }
     
     const removeBtn = document.createElement('button');
-    removeBtn.className = 'upload-preview-remove';
-    removeBtn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-      </svg>
-    `;
-    removeBtn.addEventListener('click', () => removeFile(index));
-    item.appendChild(removeBtn);
+    removeBtn.className = 'absolute top-1 right-1 bg-red-500/80 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity';
+    removeBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+    removeBtn.onclick = () => removeFile(index);
     
-    grid.appendChild(item);
+    div.appendChild(removeBtn);
+    grid.appendChild(div);
   });
-  
-  // Botón para agregar más
-  if (uploadFiles.length > 0) {
-    const addMore = document.createElement('label');
-    addMore.className = 'upload-preview-add';
-    addMore.innerHTML = `
-      <input type="file" multiple accept="image/*,video/*" hidden />
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      <span>Añadir</span>
-    `;
-    addMore.querySelector('input').addEventListener('change', handleFileSelect);
-    grid.appendChild(addMore);
-  }
 }
 
-/**
- * Validar formulario de upload
- */
+function removeFile(index) {
+  URL.revokeObjectURL(uploadPreviews[index].url);
+  uploadFiles.splice(index, 1);
+  uploadPreviews.splice(index, 1);
+  renderFilePreviews();
+  validateUploadForm();
+}
+
+function switchUploadTab(tabName) {
+  activeUploadTab = tabName;
+  document.querySelectorAll('.upload-tab-modern').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  document.getElementById('tabFile').classList.toggle('hidden', tabName !== 'file');
+  document.getElementById('tabUrl').classList.toggle('hidden', tabName !== 'url');
+  validateUploadForm();
+}
+
 function validateUploadForm() {
-  const submitBtn = document.getElementById('submitUpload');
-  const destination = document.getElementById('uploadDestination').value;
-  
+  const btn = document.getElementById('submitUpload');
   let isValid = false;
   
-  if (destination) {
-    if (activeUploadTab === 'file') {
-      isValid = uploadFiles.length > 0;
-    } else {
-      const url = document.getElementById('urlInput').value.trim();
-      isValid = url.length > 0 && (url.startsWith('http://') || url.startsWith('https://'));
-    }
+  if (selectedBoardId) {
+    if (activeUploadTab === 'file') isValid = uploadFiles.length > 0;
+    else isValid = document.getElementById('urlInput').value.trim().length > 0;
   }
   
-  submitBtn.disabled = !isValid;
-  
-  // Actualizar texto del botón
-  const btnText = submitBtn.querySelector('span');
-  if (activeUploadTab === 'file' && uploadFiles.length > 1) {
-    btnText.textContent = `Subir ${uploadFiles.length} archivos`;
+  btn.disabled = !isValid;
+  const span = btn.querySelector('span');
+  if (activeUploadTab === 'file' && uploadFiles.length > 0) {
+    span.textContent = `Subir ${uploadFiles.length} archivo${uploadFiles.length > 1 ? 's' : ''}`;
   } else {
-    btnText.textContent = 'Subir';
+    span.textContent = 'Subir';
   }
 }
 
-/**
- * Mostrar input para nueva carpeta
- */
-function showNewToggleInput() {
-  document.getElementById('newToggleInput').classList.remove('hidden');
-  document.getElementById('newToggleName').focus();
+function resetUploadForm() {
+  uploadPreviews.forEach(p => URL.revokeObjectURL(p.url));
+  uploadFiles = [];
+  uploadPreviews = [];
+  selectedBoardId = null;
+  document.getElementById('urlInput').value = '';
+  renderFilePreviews();
+  renderUploadTree(); // Re-render para quitar selección
+  switchUploadTab('file');
+  document.getElementById('uploadOverlay').classList.add('hidden');
 }
 
-/**
- * Ocultar input para nueva carpeta
- */
-function hideNewToggleInput() {
-  document.getElementById('newToggleInput').classList.add('hidden');
-  document.getElementById('newToggleName').value = '';
-}
+// --- SUBMIT ---
 
-/**
- * Crear nuevo toggle en Notion
- */
-async function createNewToggle() {
-  const name = document.getElementById('newToggleName').value.trim();
-  if (!name) return;
-  
-  const confirmBtn = document.getElementById('confirmNewToggle');
-  confirmBtn.disabled = true;
-  confirmBtn.textContent = 'Creando...';
-  
-  try {
-    const res = await authFetch('/api/create-toggle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: name })
-    });
-    
-    if (!res.ok) throw new Error('Error creando toggle');
-    
-    const data = await res.json();
-    
-    // Agregar al select y seleccionarlo
-    const select = document.getElementById('uploadDestination');
-    const option = document.createElement('option');
-    option.value = data.id;
-    option.textContent = name;
-    option.selected = true;
-    select.appendChild(option);
-    
-    hideNewToggleInput();
-    validateUploadForm();
-    
-    // Recargar el árbol del sidebar
-    if (typeof loadCustomTree === 'function') {
-      loadCustomTree(true);
-    }
-    
-  } catch (error) {
-    console.error('Error creando toggle:', error);
-    alert('Error al crear la carpeta');
-  } finally {
-    confirmBtn.disabled = false;
-    confirmBtn.textContent = 'Crear';
-  }
-}
-
-/**
- * Manejar submit del upload
- */
 async function handleUploadSubmit() {
-  const destination = document.getElementById('uploadDestination').value;
-  const caption = document.getElementById('uploadCaption').value.trim();
+  if (!selectedBoardId) return;
   
-  if (!destination) return;
+  const overlay = document.getElementById('uploadOverlay');
+  const statusText = document.getElementById('uploadStatusText');
+  const progressFill = document.querySelector('.progress-fill-modern');
   
-  const submitBtn = document.getElementById('submitUpload');
-  const progressDiv = document.getElementById('uploadProgress');
-  const progressFill = progressDiv.querySelector('.upload-progress-fill');
-  const progressText = progressDiv.querySelector('.upload-progress-text');
-  
-  submitBtn.disabled = true;
-  progressDiv.classList.remove('hidden');
+  overlay.classList.remove('hidden');
   
   try {
     if (activeUploadTab === 'file') {
       const total = uploadFiles.length;
-      const CONCURRENCY_LIMIT = 3; // Subir 3 archivos en paralelo
-      
       let completed = 0;
-      const queue = [...uploadFiles.map((file, index) => ({ file, index }))];
       
-      // Función worker que procesa archivos de la cola
+      // Cola de subida (concurrencia 3)
+      const queue = uploadFiles.map((file, i) => ({ file, i }));
       const worker = async () => {
         while (queue.length > 0) {
-          const item = queue.shift();
-          if (!item) break;
-          
-          const { file, index } = item;
-          const itemCaption = total > 1 ? (caption ? `${caption} (${index + 1})` : '') : caption;
-          
-          try {
-            await uploadFileToNotionDirect(destination, file, itemCaption);
-          } catch (err) {
-            console.error(`Error subiendo archivo ${index + 1}:`, err);
-          }
-          
+          const { file } = queue.shift();
+          // SIN CAPTION
+          await uploadFileToNotionDirect(selectedBoardId, file, '');
           completed++;
-          progressText.textContent = `Subiendo ${completed}/${total}...`;
-          progressFill.style.width = `${(completed / total) * 100}%`;
+          const pct = (completed / total) * 100;
+          progressFill.style.width = `${pct}%`;
+          statusText.textContent = `Subiendo ${completed}/${total}...`;
         }
       };
       
-      // Crear workers para subida paralela
-      const workers = Array(Math.min(total, CONCURRENCY_LIMIT))
-        .fill(null)
-        .map(() => worker());
-      
-      // Esperar a que todos terminen
-      await Promise.all(workers);
+      await Promise.all([worker(), worker(), worker()]); // 3 workers
       
     } else {
       const url = document.getElementById('urlInput').value.trim();
-      progressText.textContent = 'Guardando...';
+      statusText.textContent = 'Guardando URL...';
       progressFill.style.width = '50%';
-      
-      await uploadUrlToNotion(destination, url, caption);
+      await uploadUrlToNotion(selectedBoardId, url, '');
       progressFill.style.width = '100%';
     }
     
-    // Mostrar éxito
-    showUploadSuccess();
+    statusText.textContent = '¡Completado!';
+    setTimeout(() => {
+      closeUploadModal();
+      // Recargar vista actual si es necesario
+      if (typeof loadCustomTree === 'function') loadCustomTree(true);
+    }, 1000);
     
   } catch (error) {
-    console.error('Error en upload:', error);
+    console.error(error);
     alert('Error al subir: ' + error.message);
-    progressDiv.classList.add('hidden');
-    submitBtn.disabled = false;
+    overlay.classList.add('hidden');
   }
 }
 
@@ -651,21 +584,10 @@ function resetUploadForm() {
   uploadPreviews.forEach(url => URL.revokeObjectURL(url));
   uploadFiles = [];
   uploadPreviews = [];
-  renderFilePreviews();
-  
-  // Reset inputs
+  selectedBoardId = null;
   document.getElementById('urlInput').value = '';
-  document.getElementById('uploadCaption').value = '';
-  document.getElementById('newToggleName').value = '';
-  
-  // Reset UI
-  hideNewToggleInput();
-  document.getElementById('uploadProgress').classList.add('hidden');
-  document.getElementById('uploadSuccess').classList.add('hidden');
-  document.querySelector('.upload-progress-fill').style.width = '0%';
-  
-  // Reset tab
+  renderFilePreviews();
+  renderUploadTree(); // Re-render para quitar selección
   switchUploadTab('file');
-  
-  validateUploadForm();
+  document.getElementById('uploadOverlay').classList.add('hidden');
 }

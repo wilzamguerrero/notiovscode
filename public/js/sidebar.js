@@ -114,42 +114,40 @@ function expandSidebar() {
  * Inicializar controles dentro del sidebar
  */
 function initSidebarControls() {
-  // Botón de columnas
-  const columnBtn = document.getElementById('toggleColumnBtn');
-  const columnOptions = document.getElementById('columnOptions');
-  
-  if (columnBtn && columnOptions) {
-    columnBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      columnOptions.classList.toggle('hidden');
-      columnBtn.classList.toggle('active');
-    });
-
-    // Opciones de columnas
-    document.querySelectorAll('.column-opt').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const cols = parseInt(btn.getAttribute('data-columns'), 10);
-        
-        // Marcar el seleccionado
-        document.querySelectorAll('.column-opt').forEach(b => b.classList.remove('active'));
+  // Opciones de columnas (siempre visibles)
+  document.querySelectorAll('.column-options-row .column-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cols = parseInt(btn.getAttribute('data-columns'), 10);
+      
+      // Marcar el seleccionado
+      document.querySelectorAll('.column-options-row .column-opt').forEach(b => b.classList.remove('active'));
+      
+      if (typeof forcedColumnCount !== 'undefined') {
+        if (forcedColumnCount === cols) {
+          forcedColumnCount = null;
+          // No marcar ninguno como activo (modo responsive)
+        } else {
+          forcedColumnCount = cols;
+          btn.classList.add('active');
+        }
+      } else {
+        window.forcedColumnCount = cols;
         btn.classList.add('active');
-        
-        if (typeof forcedColumnCount !== 'undefined') {
-          if (forcedColumnCount === cols) {
-            forcedColumnCount = null;
-            btn.classList.remove('active');
-          } else {
-            forcedColumnCount = cols;
-          }
-        }
-        
-        if (typeof initializeMacy === 'function') {
-          initializeMacy();
-        }
-        
-        columnOptions.classList.add('hidden');
-        columnBtn.classList.remove('active');
-      });
+      }
+      
+      if (typeof initializeMacy === 'function') {
+        initializeMacy();
+      }
+    });
+  });
+
+  // Botón upload
+  const uploadBtn = document.getElementById('openUploadBtn');
+  if (uploadBtn) {
+    uploadBtn.addEventListener('click', () => {
+      if (typeof openUploadModal === 'function') {
+        openUploadModal();
+      }
     });
   }
 
@@ -158,20 +156,15 @@ function initSidebarControls() {
   if (fullscreenBtn) {
     fullscreenBtn.addEventListener('click', () => {
       fullscreenBtn.classList.toggle('active');
-      if (typeof toggleFullscreen === 'function') {
-        toggleFullscreen();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.error(`Error: ${err.message}`);
+        });
       } else {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch(err => {
-            console.error(`Error: ${err.message}`);
-          });
-        } else {
-          document.exitFullscreen();
-        }
+        document.exitFullscreen();
       }
     });
 
-    // Escuchar cambios de fullscreen para actualizar el estado del botón
     document.addEventListener('fullscreenchange', () => {
       if (!document.fullscreenElement) {
         fullscreenBtn.classList.remove('active');
@@ -184,7 +177,6 @@ function initSidebarControls() {
   if (animBtn) {
     animBtn.addEventListener('click', () => {
       animBtn.classList.toggle('active');
-      // Tu lógica de animación aquí
       const canvas = document.getElementById('neuro');
       if (canvas) {
         canvas.style.display = canvas.style.display === 'none' ? 'block' : 'none';
@@ -218,16 +210,6 @@ function initSidebarControls() {
       }
     });
   }
-
-  // Cerrar opciones de columnas al hacer clic fuera
-  document.addEventListener('click', (e) => {
-    if (columnOptions && !columnOptions.classList.contains('hidden')) {
-      if (!columnOptions.contains(e.target) && columnBtn && !columnBtn.contains(e.target)) {
-        columnOptions.classList.add('hidden');
-        columnBtn.classList.remove('active');
-      }
-    }
-  });
 }
 
 /**

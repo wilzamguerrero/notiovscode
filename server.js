@@ -501,15 +501,18 @@ const upload = multer({
 
 // Endpoint: Crear nuevo toggle
 app.post("/api/create-toggle", validateSession, async (req, res) => {
-  const { title } = req.body;
+  const { title, parentId } = req.body; // AÑADIDO: parentId
   
   if (!title) {
     return res.status(400).json({ error: 'Se requiere un título' });
   }
   
   try {
+    // Si hay parentId usamos ese, si no, usamos la página raíz (req.pageId)
+    const targetBlockId = parentId || req.pageId;
+
     const response = await req.notion.blocks.children.append({
-      block_id: req.pageId,
+      block_id: targetBlockId,
       children: [
         {
           object: 'block',
@@ -530,7 +533,8 @@ app.post("/api/create-toggle", validateSession, async (req, res) => {
     res.json({ 
       success: true, 
       id: newToggle.id,
-      title: title
+      title: title,
+      parentId: targetBlockId // Devolvemos el padre para actualizar el árbol
     });
     
   } catch (error) {

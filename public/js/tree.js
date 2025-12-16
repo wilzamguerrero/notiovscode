@@ -79,11 +79,17 @@ function createTreeNode(item) {
     span.classList.add('leaf');
   } else {
     span.classList.add('expandable');
-    const icon = document.createElement('img');
-    icon.src = "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/folderlist4.png";
-    icon.className = "tree-folder-icon";
-    icon.alt = "Carpeta";
-    span.appendChild(icon);
+    
+    // Usar SVG en lugar de imagen externa
+    const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    iconSvg.setAttribute('class', 'tree-folder-icon');
+    iconSvg.setAttribute('viewBox', '0 0 24 24');
+    iconSvg.setAttribute('fill', 'none');
+    iconSvg.setAttribute('stroke', 'currentColor');
+    iconSvg.setAttribute('stroke-width', '2');
+    iconSvg.innerHTML = '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>';
+    
+    span.appendChild(iconSvg);
     span.appendChild(document.createTextNode(displayTitle));
   }
 
