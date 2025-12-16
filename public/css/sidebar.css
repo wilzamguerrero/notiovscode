@@ -358,11 +358,13 @@ canvas#neuro {
   margin-left: 280px;
   transition: margin-left 0.3s ease;
   min-height: 100vh;
-  padding: 20px;
+  padding: 20px !important; /* Aire en todos los bordes */
+  box-sizing: border-box;
 }
 
 .gallery-with-sidebar.gallery-full-width {
   margin-left: 0;
+  padding: 20px !important; /* Mantener el padding cuando está a pantalla completa */
 }
 
 /* ========================================
@@ -472,6 +474,7 @@ canvas#neuro {
 
   .gallery-with-sidebar {
     margin-left: 0;
+    padding: 16px !important; /* Padding reducido en móvil pero manteniendo aire */
   }
 
   .current-level-title {
