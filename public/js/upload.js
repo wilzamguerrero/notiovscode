@@ -114,14 +114,13 @@ function renderUploadTree() {
 function createTreeNodeElement(node, depth) {
   const wrapper = document.createElement('div');
   
-  // 1. El elemento del nodo
   const nodeEl = document.createElement('div');
   nodeEl.className = `upload-tree-node ${selectedBoardId === node.id ? 'selected' : ''}`;
   nodeEl.style.paddingLeft = `${depth * 16 + 12}px`;
   nodeEl.dataset.id = node.id;
   
-  // Título limpio
-  const title = node.title.startsWith('*') ? node.title.substring(1).trim() : node.title;
+  // Ya no hay símbolo * - título limpio
+  const title = node.title.trim();
   const hasChildren = node.children && node.children.length > 0;
   
   nodeEl.innerHTML = `

@@ -37,11 +37,11 @@ function restoreTreeScroll() {
 }
 
 /**
- * Marcar nodo hoja como seleccionado
+ * Marcar nodo como seleccionado
  */
-function markSelectedLeaf(span) {
-  const allLeafNodes = document.querySelectorAll('.tree-node.leaf');
-  allLeafNodes.forEach(node => node.classList.remove('selected'));
+function markSelectedNode(span) {
+  const allNodes = document.querySelectorAll('.tree-node.selected');
+  allNodes.forEach(node => node.classList.remove('selected'));
   span.classList.add('selected');
 }
 
@@ -51,6 +51,7 @@ function markSelectedLeaf(span) {
 function closeMenuPopover() {
   saveTreeScroll();
   const menu = document.getElementById("menuPopover");
+  if (!menu) return;
   menu.classList.remove("animate-in");
   menu.classList.add("animate-out");
   menu.addEventListener("animationend", function handler() {
@@ -61,37 +62,28 @@ function closeMenuPopover() {
 }
 
 /**
- * Crear nodo del árbol
+ * Crear nodo del árbol - TODOS son carpetas híbridas
  */
 function createTreeNode(item) {
   const li = document.createElement('li');
-  const startsWithStar = item.title.trim().startsWith('*');
-  const displayTitle = startsWithStar 
-    ? item.title.trim().substring(1).trim()
-    : item.title;
+  // Ya no usamos el símbolo * - todos los nodos son tratados igual
+  const displayTitle = item.title.trim();
 
   const span = document.createElement('span');
-  span.classList.add('tree-node');
+  span.classList.add('tree-node', 'expandable'); // Todos son expandibles
   span.setAttribute('data-id', item.id);
   
-  if (startsWithStar) {
-    span.textContent = displayTitle;
-    span.classList.add('leaf');
-  } else {
-    span.classList.add('expandable');
-    
-    // Usar SVG en lugar de imagen externa
-    const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    iconSvg.setAttribute('class', 'tree-folder-icon');
-    iconSvg.setAttribute('viewBox', '0 0 24 24');
-    iconSvg.setAttribute('fill', 'none');
-    iconSvg.setAttribute('stroke', 'currentColor');
-    iconSvg.setAttribute('stroke-width', '2');
-    iconSvg.innerHTML = '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>';
-    
-    span.appendChild(iconSvg);
-    span.appendChild(document.createTextNode(displayTitle));
-  }
+  // Icono de carpeta para todos
+  const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  iconSvg.setAttribute('class', 'tree-folder-icon');
+  iconSvg.setAttribute('viewBox', '0 0 24 24');
+  iconSvg.setAttribute('fill', 'none');
+  iconSvg.setAttribute('stroke', 'currentColor');
+  iconSvg.setAttribute('stroke-width', '2');
+  iconSvg.innerHTML = '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>';
+  
+  span.appendChild(iconSvg);
+  span.appendChild(document.createTextNode(displayTitle));
 
   if (item.id === selectedNodeId) span.classList.add('selected');
 
@@ -101,68 +93,18 @@ function createTreeNode(item) {
     treeContainer.classList.add('loading-blur');
     const nodeId = span.getAttribute('data-id');
 
-    if (startsWithStar) {
-      selectedNodeId = item.id;
-      saveTreeState();
-      markSelectedLeaf(span);
-      updateCurrentLevelTitle(displayTitle, true);
-      
-      let data = item;
-      if (!item.items) {
-        try {
-          // CAMBIO: usar authFetch en lugar de fetch
-          const res = await authFetch(`/notion/toggle/${item.id}`);
-          if (!res.ok) throw new Error(`Error al cargar el nodo hoja: ${res.statusText}`);
-          data = await res.json();
-        } catch (error) {
-          console.error("Error al cargar el nodo hoja:", error);
-          treeContainer.classList.remove('loading-blur');
-          closeMenuPopover(); 
-          return;
-        }
-      }
+    // Marcar como seleccionado
+    selectedNodeId = item.id;
+    saveTreeState();
+    markSelectedNode(span);
+    updateCurrentLevelTitle(displayTitle, true);
 
-      await loadGallery(data);
-      updateCurrentLevelTitle(displayTitle);
-
-      const title = displayTitle || 'Contenido';
-      window.history.pushState({ nodeId: nodeId }, title, `#node=${nodeId}`);
-
-      setTimeout(() => {
-        treeContainer.classList.remove('loading-blur');
-        closeMenuPopover();      
-      }, 0);
-      return;
-    }
-
-    let childUl = li.querySelector('ul');
-    if (childUl) {
-      document.querySelectorAll('.tree-node.expandable.expanded').forEach(node => {
-        node.classList.remove('expanded');
-      });
-
-      const wasCollapsed = childUl.classList.contains('collapsed');
-      childUl.classList.toggle('collapsed');
-
-      if (wasCollapsed) {
-        span.classList.add('expanded');
-        if (!expandedNodes.includes(item.id)) expandedNodes.push(item.id);
-      } else {
-        span.classList.remove('expanded');
-        expandedNodes = expandedNodes.filter(id => id !== item.id);
-      }
-
-      saveTreeState();
-      treeContainer.classList.remove('loading-blur');
-      return;
-    }
-
+    // Cargar datos del nodo
     let data;
     if (treeCache[item.id]) {
       data = treeCache[item.id];
     } else {
       try {
-        // CAMBIO: usar authFetch en lugar de fetch
         const res = await authFetch(`/notion/toggle/${item.id}`);
         if (!res.ok) throw new Error(`Error al cargar el toggle: ${res.statusText}`);
         data = await res.json();
@@ -174,14 +116,32 @@ function createTreeNode(item) {
       }
     }
 
-    if (data.items && data.items.length > 0) loadGallery(data);
-
-    if (startsWithStar) {
-      treeContainer.classList.remove('loading-blur');
-      return;
+    // SIEMPRE mostrar contenido en galería si existe
+    if (data.items && data.items.length > 0) {
+      await loadGallery(data);
+    } else {
+      // Si no hay items, limpiar galería
+      clearGallery();
     }
 
-    if (data.children && data.children.length > 0) {
+    // Manejar expansión del árbol para mostrar hijos
+    let childUl = li.querySelector('ul');
+    
+    if (childUl) {
+      // Ya existe subárbol, toggle collapse
+      const wasCollapsed = childUl.classList.contains('collapsed');
+      childUl.classList.toggle('collapsed');
+
+      if (wasCollapsed) {
+        span.classList.add('expanded');
+        if (!expandedNodes.includes(item.id)) expandedNodes.push(item.id);
+      } else {
+        span.classList.remove('expanded');
+        expandedNodes = expandedNodes.filter(id => id !== item.id);
+      }
+      saveTreeState();
+    } else if (data.children && data.children.length > 0) {
+      // Crear subárbol con los hijos
       childUl = document.createElement('ul');
       childUl.classList.add('child-tree');
       data.children.forEach(child => {
@@ -194,10 +154,17 @@ function createTreeNode(item) {
       if (!expandedNodes.includes(item.id)) expandedNodes.push(item.id);
       saveTreeState();
     }
+
+    // Actualizar historial
+    const title = displayTitle || 'Contenido';
+    window.history.pushState({ nodeId: nodeId }, title, `#node=${nodeId}`);
+
     treeContainer.classList.remove('loading-blur');
+    updateCurrentLevelTitle(displayTitle);
   });
 
-  if (!startsWithStar && expandedNodes.includes(item.id)) {
+  // Si debe estar expandido, expandir automáticamente
+  if (expandedNodes.includes(item.id)) {
     setTimeout(async () => {
       span.click();
     }, 0);
@@ -219,7 +186,6 @@ async function loadCustomTree(force = false) {
     data = window.treeDataCache;
   } else {
     try {
-      // CAMBIO: usar authFetch en lugar de fetch
       const res = await authFetch("/notion/get-quick-tree");
       if (!res.ok) throw new Error("Error al obtener el árbol rápido.");
       const json = await res.json();
@@ -240,7 +206,7 @@ async function loadCustomTree(force = false) {
 }
 
 /**
- * Cargar árbol en el sidebar (versión simplificada sin popup)
+ * Cargar árbol en el sidebar
  */
 async function loadSidebarTree() {
   const treeContainer = document.getElementById('customTree');
@@ -282,6 +248,7 @@ async function loadRootTreeButtons() {
   }
   
   const container = document.getElementById('treeRootButtons');
+  if (!container) return;
   
   if (container.children.length > 0) {
     console.warn('Detectados botones existentes, limpiando para prevenir duplicación');
@@ -296,7 +263,6 @@ async function loadRootTreeButtons() {
       console.log('Usando caché de botones de raíz');
     } else {
       console.log('Cargando botones de raíz desde API');
-      // CAMBIO: usar authFetch en lugar de fetch
       const res = await authFetch("/notion/get-quick-tree");
       if (!res.ok) throw new Error("Error al obtener el árbol rápido.");
       const json = await res.json();
@@ -305,10 +271,8 @@ async function loadRootTreeButtons() {
     }
     
     data.forEach(item => {
-      const startsWithStar = item.title.trim().startsWith('*');
-      const displayTitle = startsWithStar 
-        ? item.title.trim().substring(1).trim() 
-        : item.title.trim();
+      // Ya no usamos el símbolo * 
+      const displayTitle = item.title.trim();
 
       if (createdRootButtonIds.has(item.id)) {
         console.warn(`Botón con ID ${item.id} ya existe, omitiendo`);
@@ -325,32 +289,33 @@ async function loadRootTreeButtons() {
       tooltip.textContent = displayTitle;
       btn.appendChild(tooltip);
       
-      if (startsWithStar) {
-        btn.setAttribute('data-direct-content', 'true');
-      }
-      
       btn.addEventListener('click', async () => {
         document.querySelectorAll('.tree-root-btn.selected').forEach(b => 
           b.classList.remove('selected'));
         btn.classList.add('selected');
         
-        let dataToLoad = item;
-        if (!item.items) {
-          try {
-            dataToLoad = await loadToggleDataWithCache(item.id);
-          } catch (error) {
-            console.error("Error al cargar el nodo:", error);
-            return;
+        let dataToLoad;
+        try {
+          dataToLoad = await loadToggleDataWithCache(item.id);
+        } catch (error) {
+          console.error("Error al cargar el nodo:", error);
+          return;
+        }
+        
+        // Mostrar contenido si existe
+        if (dataToLoad.items && dataToLoad.items.length > 0) {
+          await loadGallery(dataToLoad);
+        }
+        
+        // Si tiene hijos, mostrar como cards de navegación
+        if (dataToLoad.children && dataToLoad.children.length > 0) {
+          // Si NO tiene items, mostrar cards de navegación
+          if (!dataToLoad.items || dataToLoad.items.length === 0) {
+            await loadToggleCards(dataToLoad);
           }
         }
         
-        if (startsWithStar) {
-          await loadGallery(dataToLoad);
-          window.history.pushState({ nodeId: item.id }, displayTitle, `#node=${item.id}`);
-        } else {
-          await loadToggleCards(dataToLoad);
-          window.history.pushState({ nodeId: item.id }, displayTitle, `#node=${item.id}`);
-        }
+        window.history.pushState({ nodeId: item.id }, displayTitle, `#node=${item.id}`);
       });
       
       container.appendChild(btn);
@@ -392,7 +357,7 @@ async function toggleMenuPopover() {
   const menu = document.getElementById("menuPopover");
   const controlButtons = document.getElementById('controlButtons');
 
-  if (controlButtons.classList.contains('hidden') || controlButtons.classList.contains('fade-out')) {
+  if (controlButtons && (controlButtons.classList.contains('hidden') || controlButtons.classList.contains('fade-out'))) {
     showControlButtons();
     setTimeout(() => {
       toggleMenuPopover();

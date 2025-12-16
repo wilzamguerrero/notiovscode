@@ -613,39 +613,31 @@ async function loadToggleCards(data) {
       
       const button = document.createElement('button');
       button.className = 'gallery-nav-button';
-      button.textContent = child.title.trim().startsWith('*') 
-        ? child.title.trim().substring(1).trim()
-        : child.title.trim();
+      // Ya no hay símbolo *
+      const displayTitle = child.title.trim();
+      button.textContent = displayTitle;
       
       button.addEventListener('click', async () => {
-        let childData = child;
-        if (!child.items) {
-          try {
-            childData = await loadToggleDataWithCache(child.id);
-          } catch (error) {
-            console.error("Error al cargar el nodo hijo:", error);
-            return;
-          }
+        let childData;
+        try {
+          childData = await loadToggleDataWithCache(child.id);
+        } catch (error) {
+          console.error("Error al cargar el nodo hijo:", error);
+          return;
         }
 
-        const displayTitle = child.title.trim().startsWith('*') 
-          ? child.title.trim().substring(1).trim()
-          : child.title.trim();
         updateCurrentLevelTitle(displayTitle, true);
         
-        if (child.title.trim().startsWith('*') || !childData.children || childData.children.length === 0) {
+        // Siempre cargar galería si hay items
+        if (childData.items && childData.items.length > 0) {
           await loadGallery(childData);
-          
-          const title = child.title.trim().startsWith('*') 
-            ? child.title.trim().substring(1).trim()
-            : child.title.trim();
-          window.history.pushState({ nodeId: child.id }, title, `#node=${child.id}`);
-        } else {
+        } else if (childData.children && childData.children.length > 0) {
           await loadToggleCards(childData);
-          
-          const title = child.title.trim();
-          window.history.pushState({ nodeId: child.id }, title, `#node=${child.id}`);
+        } else {
+          clearGallery();
         }
+        
+        window.history.pushState({ nodeId: child.id }, displayTitle, `#node=${child.id}`);
       });
       
       buttonCard.appendChild(button);
