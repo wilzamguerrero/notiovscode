@@ -43,7 +43,7 @@ canvas#neuro {
 
 .sidebar-tab {
   position: fixed;
-  left: 280px;
+  left: 295px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1001;
@@ -87,22 +87,26 @@ canvas#neuro {
 
 .sidebar {
   position: fixed;
-  left: 0;
-  top: 0;
+  left: 16px;
+  top: 16px;
+  bottom: 16px;
   width: 280px;
-  height: 100vh;
   background: rgba(18, 18, 18, 0.98);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px; /* Esquinas redondeadas */
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, width 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   backdrop-filter: blur(20px);
   overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .sidebar.sidebar-collapsed {
-  transform: translateX(-100%);
+  transform: translateX(calc(-100% - 32px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .sidebar.sidebar-animating {
@@ -355,17 +359,23 @@ canvas#neuro {
    GALERÍA CON SIDEBAR
    ======================================== */
 
+/* ELIMINAR o comentar estos estilos que modifican la galería */
+/*
 .gallery-with-sidebar {
   margin-left: 280px;
   transition: margin-left 0.3s ease;
-  min-height: 100vh;
-  padding: 20px !important; /* Aire en todos los bordes */
-  box-sizing: border-box;
 }
 
-.gallery-with-sidebar.gallery-full-width {
+.gallery-full-width {
   margin-left: 0;
-  padding: 20px !important; /* Mantener el padding cuando está a pantalla completa */
+}
+*/
+
+/* La galería ya no necesita margen - el sidebar flota encima */
+#gallery {
+  margin-left: 0 !important;
+  width: 100% !important;
+  transition: none;
 }
 
 /* ========================================

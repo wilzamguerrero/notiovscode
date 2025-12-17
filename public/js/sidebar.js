@@ -230,7 +230,6 @@ function toggleSidebar() {
 function collapseSidebar(animate = true) {
   const sidebar = document.getElementById('sidebar');
   const sidebarTab = document.getElementById('sidebarTab');
-  const gallery = document.getElementById('gallery');
   const tabIcon = sidebarTab?.querySelector('.sidebar-tab-icon');
 
   sidebarCollapsed = true;
@@ -242,7 +241,9 @@ function collapseSidebar(animate = true) {
   
   sidebar.classList.add('sidebar-collapsed');
   sidebarTab?.classList.add('tab-collapsed');
-  gallery.classList.add('gallery-full-width');
+  
+  // YA NO modificamos la galería - el sidebar es flotante
+  // gallery.classList.add('gallery-full-width');
   
   // Rotar el icono de la pestaña
   if (tabIcon) {
@@ -255,13 +256,9 @@ function collapseSidebar(animate = true) {
     }, 300);
   }
 
-  // Recalcular Macy después de la transición
-  setTimeout(() => {
-    if (typeof initializeMacy === 'function' && typeof macyInstance !== 'undefined' && macyInstance) {
-      macyInstance.recalculate(true);
-    }
-  }, 350);
+  // Ya no necesitamos recalcular Macy porque el layout no cambia
 }
+
 
 /**
  * Expandir el sidebar
@@ -269,7 +266,6 @@ function collapseSidebar(animate = true) {
 function expandSidebar() {
   const sidebar = document.getElementById('sidebar');
   const sidebarTab = document.getElementById('sidebarTab');
-  const gallery = document.getElementById('gallery');
   const tabIcon = sidebarTab?.querySelector('.sidebar-tab-icon');
 
   sidebarCollapsed = false;
@@ -278,7 +274,9 @@ function expandSidebar() {
   sidebar.classList.add('sidebar-animating');
   sidebar.classList.remove('sidebar-collapsed');
   sidebarTab?.classList.remove('tab-collapsed');
-  gallery.classList.remove('gallery-full-width');
+  
+  // YA NO modificamos la galería - el sidebar es flotante
+  // gallery.classList.remove('gallery-full-width');
   
   // Rotar el icono de la pestaña
   if (tabIcon) {
@@ -289,42 +287,53 @@ function expandSidebar() {
     sidebar.classList.remove('sidebar-animating');
   }, 300);
 
-  // Recalcular Macy después de la transición
-  setTimeout(() => {
-    if (typeof initializeMacy === 'function' && typeof macyInstance !== 'undefined' && macyInstance) {
-      macyInstance.recalculate(true);
-    }
-  }, 350);
+  // Ya no necesitamos recalcular Macy porque el layout no cambia
 }
 
 /**
  * Inicializar controles dentro del sidebar
  */
 function initSidebarControls() {
-  // Opciones de columnas (siempre visibles)
+  // Opciones de columnas con transición suave
   document.querySelectorAll('.column-options-row .column-opt').forEach(btn => {
     btn.addEventListener('click', () => {
       const cols = parseInt(btn.getAttribute('data-columns'), 10);
+      const gallery = document.getElementById('gallery');
       
       // Marcar el seleccionado
       document.querySelectorAll('.column-options-row .column-opt').forEach(b => b.classList.remove('active'));
       
-      if (typeof forcedColumnCount !== 'undefined') {
-        if (forcedColumnCount === cols) {
-          forcedColumnCount = null;
-          // No marcar ninguno como activo (modo responsive)
-        } else {
-          forcedColumnCount = cols;
-          btn.classList.add('active');
-        }
-      } else {
-        window.forcedColumnCount = cols;
-        btn.classList.add('active');
+      // Añadir clase de transición a las cards ANTES de cambiar columnas
+      if (gallery) {
+        gallery.style.opacity = '0.7';
+        gallery.style.transition = 'opacity 0.15s ease';
       }
       
-      if (typeof initializeMacy === 'function') {
-        initializeMacy();
-      }
+      // Pequeño delay para que la transición sea visible
+      setTimeout(() => {
+        if (typeof forcedColumnCount !== 'undefined') {
+          if (forcedColumnCount === cols) {
+            forcedColumnCount = null;
+          } else {
+            forcedColumnCount = cols;
+            btn.classList.add('active');
+          }
+        } else {
+          window.forcedColumnCount = cols;
+          btn.classList.add('active');
+        }
+        
+        if (typeof initializeMacy === 'function') {
+          initializeMacy();
+        }
+        
+        // Restaurar opacidad después de que Macy recalcule
+        setTimeout(() => {
+          if (gallery) {
+            gallery.style.opacity = '1';
+          }
+        }, 50);
+      }, 150);
     });
   });
 

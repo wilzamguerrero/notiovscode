@@ -92,6 +92,16 @@ pre code {
 #gallery {
   padding: 20px;
   min-height: 100vh;
+  transition: opacity 0.15s ease;
+}
+
+#gallery .card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+/* Evitar el "flash" durante el recálculo de Macy */
+#gallery.macy-recalculating .card {
+  opacity: 0.8;
 }
 
 .gallery-with-sidebar #gallery {
