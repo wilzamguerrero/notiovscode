@@ -1,0 +1,981 @@
+/**
+ * PARTE 3: Estilos del Sidebar y Navegación
+ */
+
+/* ========================================
+   CANVAS BACKGROUND
+   ======================================== */
+
+canvas#neuro {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .95;
+  z-index: -10;
+  pointer-events: none;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+/**
+ * PARTE 3: Sidebar, Navegación y Canvas
+ */
+
+/* ========================================
+   CANVAS NEURO (FONDO ANIMADO)
+   ======================================== */
+
+#neuro {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ========================================
+   SIDEBAR TAB (PESTAÑA)
+   ======================================== */
+
+.sidebar-tab {
+  position: fixed;
+  left: 295px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;
+  width: 24px;
+  height: 60px;
+  background: rgba(26, 26, 26, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.sidebar-tab:hover {
+  background: rgba(40, 40, 40, 0.95);
+  width: 28px;
+}
+
+.sidebar-tab.tab-collapsed {
+  left: 0;
+}
+
+.sidebar-tab-icon {
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-tab:hover .sidebar-tab-icon {
+  color: #fff;
+}
+
+/* ========================================
+   SIDEBAR PRINCIPAL
+   ======================================== */
+
+.sidebar {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  bottom: 16px;
+  width: 280px;
+  background: rgba(18, 18, 18, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px; /* Esquinas redondeadas */
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar.sidebar-collapsed {
+  transform: translateX(calc(-100% - 32px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar.sidebar-animating {
+  pointer-events: none;
+}
+
+/* ========================================
+   SIDEBAR SECTIONS
+   ======================================== */
+
+.sidebar-section {
+  padding: 16px;
+  flex-shrink: 0;
+}
+
+.sidebar-section-header {
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
+
+.sidebar-section-header span {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 0 16px;
+  flex-shrink: 0;
+}
+
+/* ========================================
+   COLUMNAS SIEMPRE VISIBLES
+   ======================================== */
+
+.column-options-row {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0;
+  justify-content: space-between;
+}
+
+.column-options-row .column-opt {
+  flex: 1;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.column-options-row .column-opt:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.column-options-row .column-opt.active {
+  background: rgba(0, 255, 252, 0.2);
+  border-color: rgba(0, 255, 252, 0.5);
+  color: #00fffc;
+}
+
+/* ========================================
+   BOTONES DE CONTROL EN FILA (SOLO ICONOS)
+   ======================================== */
+
+.sidebar-controls-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.sidebar-icon-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-icon-btn.active {
+  background: rgba(0, 255, 252, 0.15);
+  border-color: rgba(0, 255, 252, 0.3);
+  color: #00fffc;
+}
+
+.sidebar-icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Estilo especial para el botón de logout */
+.sidebar-icon-btn.logout {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.sidebar-icon-btn.logout:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+/* ========================================
+   ÁRBOL DE NAVEGACIÓN
+   ======================================== */
+
+.sidebar-tree-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+}
+
+.sidebar-tree {
+  padding: 8px;
+}
+
+.sidebar-tree ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-tree li {
+  margin: 2px 0;
+}
+
+.sidebar-tree .child-tree {
+  margin-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  padding-left: 8px;
+}
+
+.sidebar-tree .child-tree.collapsed {
+  display: none;
+}
+
+/* Nodos del árbol */
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  position: relative;
+}
+
+.tree-node:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.tree-node.selected {
+  background: rgba(0, 255, 252, 0.1);
+  color: #00fffc;
+}
+
+.tree-node.expanded {
+  color: #fff;
+}
+
+.tree-node.leaf {
+  padding-left: 28px;
+}
+
+.tree-folder-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+  flex-shrink: 0;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.tree-node:hover .tree-folder-icon,
+.tree-node.expanded .tree-folder-icon {
+  opacity: 1;
+  color: #00fffc;
+}
+
+.tree-node.selected .tree-folder-icon {
+  color: #00fffc;
+}
+
+/* ========================================
+   TÍTULO DEL NIVEL ACTUAL
+   ======================================== */
+
+.current-level-title {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 10px 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 100;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 80%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.current-level-title.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px);
+  pointer-events: none;
+}
+
+/* ========================================
+   GALERÍA CON SIDEBAR
+   ======================================== */
+
+/* ELIMINAR o comentar estos estilos que modifican la galería */
+/*
+.gallery-with-sidebar {
+  margin-left: 280px;
+  transition: margin-left 0.3s ease;
+}
+
+.gallery-full-width {
+  margin-left: 0;
+}
+*/
+
+/* La galería ya no necesita margen - el sidebar flota encima */
+#gallery {
+  margin-left: 0 !important;
+  width: 100% !important;
+  transition: none;
+}
+
+/* ========================================
+   CONTAINER LOGO (oculto ahora)
+   ======================================== */
+
+.container_logo {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.container_logo img {
+  width: 150px;
+  height: auto;
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+
+.loading-blur {
+  filter: blur(2px);
+  pointer-events: none;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #00fffc;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================
+   SCROLLBAR PERSONALIZADO
+   ======================================== */
+
+.sidebar-tree-wrapper::-webkit-scrollbar,
+.upload-tree-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-tree-wrapper::-webkit-scrollbar-track,
+.upload-tree-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-tree-wrapper::-webkit-scrollbar-thumb,
+.upload-tree-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.sidebar-tree-wrapper::-webkit-scrollbar-thumb:hover,
+.upload-tree-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   RESPONSIVE - SIDEBAR
+   ======================================== */
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .sidebar.sidebar-mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-tab {
+    left: 0;
+    width: 32px;
+    height: 48px;
+  }
+
+  .sidebar-tab.tab-collapsed {
+    left: 0;
+  }
+
+  .gallery-with-sidebar {
+    margin-left: 0;
+    padding: 16px !important; /* Padding reducido en móvil pero manteniendo aire */
+  }
+
+  .current-level-title {
+    top: 10px;
+    font-size: 0.8rem;
+    padding: 8px 16px;
+  }
+
+  .sidebar-controls-row {
+    gap: 6px;
+  }
+
+  .sidebar-icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .sidebar-icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    max-width: 100%;
+  }
+
+  .sidebar-section {
+    padding: 12px;
+  }
+
+  .column-options-row .column-opt {
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .sidebar-controls-row {
+    gap: 4px;
+  }
+
+  .sidebar-icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sidebar-icon-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .tree-node {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+/* ========================================
+   LEGACY STYLES (para compatibilidad)
+   ======================================== */
+
+/* Ocultar estilos que ya no se usan */
+.sidebar-header,
+.sidebar-logo,
+.sidebar-title,
+.sidebar-btn-primary,
+.sidebar-logout-btn,
+.sidebar-controls-grid,
+.column-options-dropdown {
+  display: none !important;
+}
+/* ========================================
+   HEADER CON ACCIÓN
+   ======================================== */
+
+.sidebar-section-header.with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-header-btn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.sidebar-header-btn:hover {
+  color: #00fffc;
+  background: rgba(0, 255, 252, 0.1);
+}
+
+.sidebar-header-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ========================================
+   BOTÓN CREAR CARPETA EN NODOS DEL ÁRBOL
+   ======================================== */
+
+.tree-node-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tree-node:hover .tree-node-actions {
+  opacity: 1;
+}
+
+.tree-add-folder-btn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.tree-add-folder-btn:hover {
+  color: #00fffc;
+  background: rgba(0, 255, 252, 0.1);
+}
+
+.tree-add-folder-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Input inline para crear carpeta */
+.new-folder-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  margin: 2px 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  min-width: 0; /* Importante para que flex funcione bien */
+}
+
+.new-folder-inline input {
+  flex: 1;
+  min-width: 0; /* Permite que el input se encoja */
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.new-folder-inline input::placeholder {
+  color: #6b7280;
+}
+
+.new-folder-inline-btn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  flex-shrink: 0; /* Evita que los botones se encojan */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.new-folder-inline-btn.confirm {
+  color: #00fffc;
+}
+
+.new-folder-inline-btn.confirm:hover {
+  background: rgba(0, 255, 252, 0.2);
+}
+
+.new-folder-inline-btn.cancel:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.new-folder-inline-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.new-folder-inline-btn.loading svg {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ========================================
+   SIDEBAR FOOTER
+   ======================================== */
+
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.open-upload-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #00fffc, #00ff80);
+  border: none;
+  border-radius: 10px;
+  color: #0a0a0a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 255, 252, 0.3);
+}
+
+.open-upload-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 255, 252, 0.4);
+  filter: brightness(1.1);
+}
+
+.open-upload-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sidebar-footer-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebar-footer-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.sidebar-footer-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ========================================
+   PANEL DE UPLOAD INTEGRADO
+   ======================================== */
+
+.sidebar-upload-panel {
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.2s ease;
+}
+
+.sidebar-upload-panel.hidden {
+  display: none;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tabs del panel */
+.upload-panel-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 12px;
+}
+
+.upload-panel-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-panel-tab:hover {
+  color: #9ca3af;
+}
+
+.upload-panel-tab.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.upload-panel-tab svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Contenido del panel */
+.upload-panel-content {
+  margin-bottom: 12px;
+}
+
+.upload-panel-tab-content {
+  display: block;
+}
+
+.upload-panel-tab-content.hidden {
+  display: none;
+}
+
+/* Botón seleccionar archivos */
+.select-files-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.select-files-btn:hover {
+  border-color: rgba(0, 255, 252, 0.4);
+  color: #00fffc;
+  background: rgba(0, 255, 252, 0.05);
+}
+
+.select-files-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.select-files-btn .files-count {
+  color: #00fffc;
+  font-weight: 600;
+}
+
+/* Input de URL */
+.link-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.link-input-wrapper svg {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+}
+
+.link-input-wrapper input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.link-input-wrapper input::placeholder {
+  color: #6b7280;
+}
+
+.link-input-wrapper input:focus {
+  border-color: rgba(0, 255, 252, 0.5);
+}
+
+/* Acciones del panel */
+.upload-panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.upload-here-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #00fffc, #00ff80);
+  border: none;
+  border-radius: 8px;
+  color: #0a0a0a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.upload-here-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 255, 252, 0.4);
+  filter: brightness(1.1);
+}
+
+.upload-here-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload-here-btn .spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #0a0a0a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.upload-here-btn .spinner.hidden {
+  display: none;
+}
+
+.cancel-upload-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-upload-btn:hover {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #f87171;
+}
+
+.cancel-upload-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ========================================
+   OCULTAR BOTÓN UPLOAD VIEJO
+   ======================================== */
+
+#openUploadBtn {
+  display: none !important;
+}

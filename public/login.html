@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - NotioPin</title>
+  <link rel='shortcut icon' type='image/x-icon' href='favicon.svg' />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .login-container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f0f;
+      position: relative;
+      overflow: hidden;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .login-bg-gradient-1 {
+      position: absolute;
+      top: -20%;
+      left: -10%;
+      width: 500px;
+      height: 500px;
+      background: rgba(0, 255, 252, 0.1);
+      border-radius: 50%;
+      filter: blur(120px);
+    }
+
+    .login-bg-gradient-2 {
+      position: absolute;
+      bottom: -20%;
+      right: -10%;
+      width: 500px;
+      height: 500px;
+      background: rgba(0, 255, 128, 0.1);
+      border-radius: 50%;
+      filter: blur(120px);
+    }
+
+    .login-card {
+      z-index: 10;
+      width: 100%;
+      max-width: 420px;
+      padding: 2rem;
+      background: rgba(26, 26, 26, 0.5);
+      backdrop-filter: blur(20px);
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-logo {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1rem;
+      background: linear-gradient(135deg, #00fffc, #00ff80);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 40px rgba(0, 255, 252, 0.2);
+    }
+
+    .login-logo svg {
+      width: 32px;
+      height: 32px;
+      color: #1a1a1a;
+    }
+
+    .login-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-family: sans-serif;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-left: 0.25rem;
+      font-family: sans-serif;
+    }
+
+    .form-input-wrapper {
+      position: relative;
+    }
+
+    .form-input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      color: #6b7280;
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      color: #fff;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+
+    .form-input::placeholder {
+      color: #4b5563;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: rgba(0, 255, 252, 0.5);
+      box-shadow: 0 0 0 3px rgba(0, 255, 252, 0.1);
+    }
+
+    .form-hint {
+      font-size: 0.625rem;
+      color: #4b5563;
+      margin-top: 0.25rem;
+      margin-left: 0.25rem;
+      font-family: sans-serif;
+    }
+
+    .error-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: #f87171;
+      font-size: 0.75rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      display: none;
+      font-family: sans-serif;
+    }
+
+    .error-box.show {
+      display: block;
+    }
+
+    .login-btn {
+      width: 100%;
+      background: #fff;
+      color: #000;
+      font-weight: 700;
+      padding: 0.875rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      font-family: sans-serif;
+    }
+
+    .login-btn:hover:not(:disabled) {
+      background: #e5e5e5;
+    }
+
+    .login-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .login-btn svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.2s;
+    }
+
+    .login-btn:hover:not(:disabled) svg {
+      transform: translateX(4px);
+    }
+
+    .login-btn.loading .btn-text {
+      display: none;
+    }
+
+    .login-btn.loading .btn-loading {
+      display: inline;
+    }
+
+    .login-btn.loading .btn-arrow {
+      display: none;
+    }
+
+    .btn-loading {
+      display: none;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #000;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-bg-gradient-1"></div>
+    <div class="login-bg-gradient-2"></div>
+
+    <div class="login-card">
+      <div class="login-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </div>
+
+      <h1 class="login-title">NotioPin</h1>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label">Credenciales de Acceso</label>
+          </div>
+          <div class="form-input-wrapper">
+            <svg class="form-input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+            <input 
+              type="password" 
+              id="credentialsInput" 
+              class="form-input" 
+              placeholder="PageID_Token"
+              required
+            />
+          </div>
+          <p class="form-hint">Formato: ID_DE_PAGINA_secret_xxxx...</p>
+        </div>
+
+        <div id="errorBox" class="error-box"></div>
+
+        <button type="submit" id="loginBtn" class="login-btn">
+          <span class="btn-text">Conectar</span>
+          <span class="btn-loading"><span class="spinner"></span> Conectando...</span>
+          <svg class="btn-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function extractPageId(input) {
+      if (input.includes('notion.so') || input.includes('notion.site')) {
+        const patterns = [
+          /([a-f0-9]{32})/i,
+          /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i
+        ];
+        
+        for (const pattern of patterns) {
+          const match = input.match(pattern);
+          if (match) {
+            return match[1].replace(/-/g, '');
+          }
+        }
+      }
+      
+      return input.replace(/-/g, '').trim();
+    }
+
+    async function checkExistingSession() {
+      const sessionId = sessionStorage.getItem('notionSessionId');
+      if (!sessionId) return false;
+
+      try {
+        const res = await fetch('/api/verify-session', {
+          headers: { 'X-Session-Id': sessionId }
+        });
+        const data = await res.json();
+        
+        if (data.valid) {
+          window.location.href = '/';
+          return true;
+        } else {
+          sessionStorage.removeItem('notionSessionId');
+          return false;
+        }
+      } catch (e) {
+        return false;
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = document.getElementById('loginBtn');
+      const errorBox = document.getElementById('errorBox');
+      const credentials = document.getElementById('credentialsInput').value.trim();
+      
+      if (!credentials) {
+        errorBox.textContent = 'Por favor ingresa las credenciales';
+        errorBox.classList.add('show');
+        return;
+      }
+
+      const parts = credentials.split('_');
+      
+      if (parts.length < 2) {
+        errorBox.textContent = 'Formato inválido. Usa: PageID_Token';
+        errorBox.classList.add('show');
+        return;
+      }
+
+      const pageIdRaw = parts[0].trim();
+      const notionSecret = parts.slice(1).join('_').trim();
+      const pageId = pageIdRaw.replace(/-/g, '');
+
+      if (!notionSecret.startsWith('secret_') && !notionSecret.startsWith('ntn_')) {
+        errorBox.textContent = 'El token debe comenzar con "secret_" o "ntn_"';
+        errorBox.classList.add('show');
+        return;
+      }
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+      errorBox.classList.remove('show');
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notionSecret, pageId })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          sessionStorage.setItem('notionSessionId', data.sessionId);
+          window.location.href = '/';
+        } else {
+          errorBox.textContent = data.error || 'Error de conexión';
+          errorBox.classList.add('show');
+        }
+      } catch (err) {
+        errorBox.textContent = 'Error de red. Intenta de nuevo.';
+        errorBox.classList.add('show');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    });
+
+    checkExistingSession();
+  </script>
+</body>
+</html>

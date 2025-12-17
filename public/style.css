@@ -1,0 +1,16 @@
+/**
+ * CSS PRINCIPAL - wilzamguerrero
+ * 
+ * Este archivo importa los 4 módulos CSS divididos:
+ * 1. base.css    - Estilos base, tipografía, galería y cards
+ * 2. modals.css  - Modales de texto, PDF y código
+ * 3. sidebar.css - Sidebar, navegación y canvas
+ * 4. upload.css  - Modal de upload y responsive
+ * 
+ * Backup completo: style-backup.css
+ */
+
+@import url('css/base.css');
+@import url('css/modals.css');
+@import url('css/sidebar.css');
+@import url('css/upload.css');

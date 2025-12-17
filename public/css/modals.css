@@ -1,0 +1,367 @@
+/**
+ * PARTE 2: Estilos de Modales (Texto, PDF, Código)
+ */
+
+/* ========================================
+   TEXT MODAL
+   ======================================== */
+
+.text-modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  color: #00fffc;
+  backdrop-filter: blur(10px);
+  background-color: rgba(0, 0, 0, 0.75);
+  opacity: 0;
+  filter: blur(60px);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  overflow: hidden;
+}
+
+.text-modal.show {
+  opacity: 1;
+  filter: blur(0);
+  animation: removeBlur 0.5s ease-out forwards;
+}
+
+.text-modal.hide {
+  animation: modalFadeOut 0.5s ease-out forwards;
+}
+
+@keyframes removeBlur {
+  to {
+    filter: blur(0);
+  }
+}
+
+@keyframes modalFadeOut {
+  0% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(100px);
+  }
+}
+
+.text-modal-content {
+  scrollbar-color: #00fffc #2222224b;
+  scrollbar-width: none;
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  max-height: 100vh;
+  margin: auto;
+  padding: 40px 24px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.text-modal-content > * {
+  width: 100%;
+  max-width: 700px;
+  text-align: left;
+}
+
+.text-modal-content p {
+  margin-bottom: 16px;
+}
+
+.text-modal-content.text-type {
+  font-family: 'Roboto Mono', monospace;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+.text-modal-content.heading-type {
+  font-family: 'BebasNeueRegular', 'Roboto Mono', monospace;
+  letter-spacing: 0.04em;
+  font-size: 28pt;
+}
+
+.text-modal-content.heading-type h1,
+.text-modal-content.heading-type h2,
+.text-modal-content.heading-type h3 {
+  margin-top: 20px;
+  margin-bottom: 16px;
+}
+
+.text-modal.show .text-modal-content {
+  transform: scale(1);
+}
+
+#textModalContent {
+  padding-top: 60px;
+  padding-bottom: 60px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  overflow: visible;
+  word-wrap: break-word;
+}
+
+#textModalContent p, 
+#textModalContent div,
+#textModalContent h1,
+#textModalContent h2,
+#textModalContent h3 {
+  text-align: left;
+}
+
+.text-modal-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  z-index: 10002;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  border-bottom: 2px solid #00fffc;
+}
+
+.text-modal-close {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10003;
+  color: #00fffc;
+  font-weight: bold;
+  cursor: pointer;
+  background-color: #232323;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  font-family: 'Roboto Mono', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.text-modal-close:hover {
+  background-color: #333;
+}
+
+.text-modal-nav {
+  position: static;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.text-modal-nav button {
+  background-color: #232323;
+  color: #00fffc;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.text-modal-nav button:hover {
+  background-color: #333;
+}
+
+.text-modal-nav button:disabled {
+  background-color: #222;
+  color: #555;
+  cursor: not-allowed;
+}
+
+.text-modal-nav button:first-child {
+  margin-right: auto;
+}
+
+.text-modal-nav button:last-child {
+  margin-left: auto;
+}
+
+body.modal-open {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden !important;
+}
+
+/* ========================================
+   PDF MODAL
+   ======================================== */
+
+.pdf-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdf-modal-content {
+  width: 90%;
+  height: 90%;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #2d2d2d;
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.pdf-modal-title {
+  color: #fff;
+  font-size: 14px;
+}
+
+.pdf-modal-close {
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.pdf-modal-close:hover {
+  color: #00fffc;
+}
+
+.pdf-iframe {
+  flex: 1;
+  border: none;
+}
+
+/* ========================================
+   CODE MODAL
+   ======================================== */
+
+.code-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.code-modal-content {
+  width: 90%;
+  max-width: 900px;
+  max-height: 90%;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.code-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #2d2d2d;
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.code-modal-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.code-language-badge {
+  background-color: #00fffc;
+  color: #1e1e1e;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.code-modal-title {
+  color: #888;
+  font-size: 13px;
+}
+
+.code-modal-close {
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.code-modal-close:hover {
+  color: #00fffc;
+}
+
+.code-modal-container {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  margin: 0;
+  background-color: #1e1e1e;
+}
+
+.code-modal-container code {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Modal Responsive */
+@media screen and (max-width: 768px) {
+  .text-modal-content {
+    max-height: calc(100vh - 4rem);
+    padding-bottom: 200px !important;
+  }
+  
+  .text-modal-header {
+    height: 60px;
+  }
+  
+  .text-modal-nav button {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .text-modal-close {
+    font-size: 18pt;
+    padding: 8px 18px;
+  }
+}

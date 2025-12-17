@@ -1,0 +1,2809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>wilzamguerrero</title>
+  <link rel='shortcut icon' type='image/x-icon' href='favicon.svg' />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- CSS Principal -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- LightGallery CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/css/lightgallery-bundle.min.css" />
+
+  <!-- jsTree CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jstree@3.3.12/dist/themes/default-dark/style.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+  <script>
+    // Script para deshabilitar todos los mensajes de consola por seguridad
+    (function() {
+      // Guardar referencia a funciones originales (solo para depuración interna si es necesario)
+      const originalConsole = {
+        log: console.log,
+        error: console.error,
+        warn: console.warn,
+        info: console.info,
+        debug: console.debug,
+        trace: console.trace
+      };
+      
+      // Función vacía que no hace nada
+      const noop = function() {};
+      
+      // Reemplazar todas las funciones de consola
+      console.log = noop;
+      console.error = noop;
+      console.warn = noop;
+      console.info = noop;
+      console.debug = noop;
+      console.trace = noop;
+      
+      // También podemos ocultar console.clear para evitar la limpieza de mensajes anteriores
+      console.clear = noop;
+      
+      // Desactivar también console.dir y console.table que muestran datos estructurados
+      console.dir = noop;
+      console.table = noop;
+      
+      // Opcional: Si necesitas reactivar la consola en algún momento (solo para desarrollo)
+      window._enableConsole = function() {
+        console.log = originalConsole.log;
+        console.error = originalConsole.error;
+        console.warn = originalConsole.warn;
+        console.info = originalConsole.info;
+        console.debug = originalConsole.debug;
+        console.trace = originalConsole.trace;
+        console.dir = window.console.dir;
+        console.table = window.console.table;
+      };
+      
+      // Interceptar también errores de ventana que podrían mostrarse en consola
+      window.addEventListener('error', function(e) {
+        e.preventDefault();
+        return true; // Evitar que el error se muestre en la consola
+      }, true);
+    })();
+  </script>
+
+  <!-- jQuery & jsTree -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jstree@3.3.12/dist/jstree.min.js"></script>
+
+  <!-- Macy, LightGallery & Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/macy@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/lightgallery.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/plugins/zoom/lg-zoom.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/plugins/autoplay/lg-autoplay.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/plugins/fullscreen/lg-fullscreen.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/plugins/thumbnail/lg-thumbnail.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.1/plugins/rotate/lg-rotate.umd.min.js"></script>
+  <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+</head>
+<body>
+
+    <canvas id="neuro"></canvas>
+
+  <!-- Contenedor vertical para botones y árbol -->
+  <div class="vertical-stack fixed-container">
+
+    <div id="currentLevelTitle" class="current-level-title hidden">Nivel actual</div>
+
+    <button id="showControlsBtn" class="button-style show-controls-btn transparent-bg">
+      <img src="https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/p1.png" alt="Mostrar controles" />
+      <span class="custom-tooltip">Mostrar controles</span>
+    </button>
+
+    <!-- Contenedor para los botones que se mostrarán/ocultarán -->
+    <div id="controlButtons" class="control-buttons hidden">
+      <!-- Botón showAllFolders con imagen 
+      <button id="showAllFolders" class="button-style showAllFolders" onclick="toggleMenuPopover()">
+        <img src="https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/folder.png" alt="menu de archivos" /> 
+        <span class="custom-tooltip">menu de archivos</span>
+      </button>
+      -->
+
+      <div id="treeRootButtons" class="tree-root-buttons"></div>
+
+      <button id="toggleColumnBtn" class="button-style toggleColumnBtn">
+        <img src="https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/menu.png" alt="Numero de elementos" /> 
+        <span class="custom-tooltip">Numero de elementos</span>
+      </button>
+  
+      <button id="toggleFullscreenBtn" class="button-style toggleFullscreenBtn">
+        <img src="https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/scroll.png" alt="Pantalla Completa" /> 
+        <span class="custom-tooltip">Pantalla Completa</span>
+      </button>
+  
+      <button id="toggleNeuroAnim" class="button-style">
+        <img src="https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png" alt="animacion fx" /> 
+        <span class="custom-tooltip">animacion fx</span>
+      </button>
+  
+      <button id="backToToporbottom" class="button-style" onclick="scrollToTopOrBottom()">
+        <img src="https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/up.png" alt="subir y bajar automáticamente" /> 
+        <span class="custom-tooltip">subir y bajar automáticamente</span>
+      </button>
+    </div>
+
+    <div id="columnOptions" class="column-options hidden">
+      <button class="button-style column-option" data-columns="1">1</button>
+      <button class="button-style column-option" data-columns="2">2</button>
+      <button class="button-style column-option" data-columns="3">3</button>
+      <button class="button-style column-option" data-columns="4">4</button>
+      <button class="button-style column-option" data-columns="5">5</button>
+      <button class="button-style column-option" data-columns="6">6</button>
+    </div>
+
+    <div id="menuPopover" class="menu-popover hidden">
+      <div id="customTree"></div>
+    </div>
+
+  </div>
+
+  <div id="gallery"></div>
+
+  <script>
+    let singleColumnMode = false;
+    let macyInstance = null;
+    let lgInstance = null;
+    let forcedColumnCount = null;
+
+    // Add these variables at the top of your script section
+    let currentTextItems = [];
+    let currentTextIndex = -1;
+
+    const CACHE_EXPIRATION = 60 * 60 * 1000; // 1 hour in milliseconds
+
+    // Enhanced caching system
+    function getCachedData(key) {
+      try {
+        const cachedItem = localStorage.getItem(`notion_cache_${key}`);
+        if (cachedItem) {
+          const { data, timestamp } = JSON.parse(cachedItem);
+          if (Date.now() - timestamp < CACHE_EXPIRATION) {
+            return data;
+          }
+        }
+        return null;
+      } catch (e) {
+        console.warn('Cache retrieval error:', e);
+        return null;
+      }
+    }
+
+    function setCachedData(key, data) {
+      try {
+        const cacheItem = {
+          data,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(`notion_cache_${key}`, JSON.stringify(cacheItem));
+      } catch (e) {
+        console.warn('Cache storage error:', e);
+      }
+    }
+
+    // Use this in loadGallery and other fetch functions
+    async function loadToggleData(itemId) {
+      // Try cache first
+      const cachedData = getCachedData(itemId);
+      if (cachedData) {
+        return cachedData;
+      }
+      
+      // Fetch if not cached
+      try {
+        const res = await fetch(`/notion/toggle/${itemId}`);
+        if (!res.ok) throw new Error(`Error loading toggle: ${res.statusText}`);
+        const data = await res.json();
+        
+        // Store in cache
+        setCachedData(itemId, data);
+        return data;
+      } catch (error) {
+        console.error("Error loading toggle data:", error);
+        throw error;
+      }
+    }
+
+    // Caché mejorada para respuestas de API
+    const apiCache = {};
+
+    // Función mejorada para cargar datos con caché
+    async function loadToggleDataWithCache(itemId) {
+      // 1. Primero verificar en la memoria (caché runtime)
+      if (apiCache[itemId]) {
+        console.log(`Cargando desde caché en memoria: ${itemId}`);
+        return apiCache[itemId];
+      }
+      
+      // 2. Después verificar en localStorage
+      const cachedData = getCachedData(itemId);
+      if (cachedData) {
+        console.log(`Cargando desde localStorage: ${itemId}`);
+        // Guardarlo también en memoria para acceso más rápido
+        apiCache[itemId] = cachedData;
+        return cachedData;
+      }
+      
+      // 3. Si no está en caché, hacer petición a la API
+      console.log(`Haciendo petición a API: ${itemId}`);
+      try {
+        const res = await fetch(`/notion/toggle/${itemId}`);
+        if (!res.ok) throw new Error(`Error loading toggle: ${res.statusText}`);
+        const data = await res.json();
+        
+        // Guardar en ambas cachés
+        apiCache[itemId] = data;
+        setCachedData(itemId, data);
+        return data;
+      } catch (error) {
+        console.error("Error loading toggle data:", error);
+        throw error;
+      }
+    }
+
+    // También mejora loadGallery para asegurar la limpieza completa
+    async function loadGallery(toggle) {
+  // Limpieza completa de contenido previo
+  if (macyInstance) {
+    macyInstance.remove(true);
+    macyInstance = null;
+  }
+  
+  // Usar nuestra función segura
+  safeDestroyLightGallery();
+  
+  const gallery = document.getElementById('gallery');
+  gallery.style.visibility = 'hidden';
+  gallery.innerHTML = "";
+  
+      
+      // Verificamos datos válidos
+      if (!toggle || !toggle.items || toggle.items.length === 0) {
+        console.log("No hay elementos para mostrar en loadGallery");
+        gallery.style.visibility = 'visible';
+        return;
+      }
+      
+      // Store text items for modal navigation
+      currentTextItems = toggle.items.filter(item => 
+    item.type === "text" || 
+    item.type === "heading_1" || 
+    item.type === "heading_2" || 
+    item.type === "heading_3" ||
+    item.type === "code"
+  );
+
+      toggle.items.forEach(item => {
+        if (item.type === "text") {
+          const textBlock = document.createElement("div");
+          textBlock.className = "gallery-text-block";
+          let content = '';
+          if (item.rich_text) {
+            content = renderNotionRichText(item.rich_text);
+            textBlock.innerHTML = content;
+          } else {
+            content = item.content;
+            textBlock.textContent = content;
+          }
+          // Make text block clickable to open modal
+          textBlock.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent any default behavior
+            e.stopPropagation(); // Stop event bubbling
+            // Find index in currentTextItems array
+            const index = currentTextItems.findIndex(i => 
+              (i.type === "text" && 
+               ((i.rich_text && renderNotionRichText(i.rich_text) === content) || 
+                (i.content && i.content === content)))
+            );
+            openTextModal(content, index);
+          });
+          gallery.appendChild(textBlock);
+          return;
+        }
+        
+        // Soporte para headings
+        else if (item.type === "heading_1" || item.type === "heading_2" || item.type === "heading_3") {
+          const wrapper = document.createElement("div");
+          wrapper.className = "gallery-text-block gallery-heading-block";
+          const h = document.createElement(item.type.replace("_", ""));
+          let content = '';
+          if (item.rich_text) {
+            content = renderNotionRichText(item.rich_text);
+            h.innerHTML = content;
+          } else {
+            content = item.content;
+            h.textContent = content;
+          }
+          wrapper.appendChild(h);
+          
+          // Make heading block clickable to open modal
+          wrapper.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent any default behavior
+            e.stopPropagation(); // Stop event bubbling
+            const headingContent = '<' + item.type.replace("_", "") + '>' + content + '</' + item.type.replace("_", "") + '>';
+            // Find index in currentTextItems array
+            const index = currentTextItems.findIndex(i => i === item);
+            openTextModal(headingContent, index);
+          });
+          
+          gallery.appendChild(wrapper);
+          return;
+        }
+
+        else if (item.type === "image") {
+          const card = createImageCard(item);
+          gallery.appendChild(card);
+          return;
+        }
+
+        else if (item.type === "video") {
+  const card = document.createElement("div");
+  card.className = "card hidden";
+
+  const video = document.createElement("video");
+  video.src = item.src;
+  video.controls = true;
+  video.preload = "metadata";
+  video.loop = true;
+  video.muted = true;
+  card.appendChild(video);
+
+  // Crear tooltip con clase para auto-hide
+  if (item.name) {
+    const tooltip = document.createElement("span");
+    tooltip.className = "custom-tooltip";
+    tooltip.textContent = item.name || "Sin nombre";
+    card.appendChild(tooltip);
+    
+    // Programar el auto-hide
+    setTimeout(() => {
+      tooltip.classList.add('tooltip-auto-hide');
+    }, 5000);
+  }
+
+  gallery.appendChild(card);
+}
+
+else if (item.type === "file") {
+      const card = createFileCard(item);
+      gallery.appendChild(card);
+    } else if (item.type === "code") {
+      const card = createCodeCard(item);
+      gallery.appendChild(card);
+    } else if (item.type === "embed") {
+      const card = createEmbedCard(item);
+      gallery.appendChild(card);
+    }
+
+      });
+
+      imagesLoaded(gallery, { background: true }, () => {
+  document.querySelectorAll(".card.hidden").forEach(card => card.classList.remove("hidden"));
+  
+  // Añadir evento al cargar cada imagen individual
+  const allImages = document.querySelectorAll("#gallery img");
+  allImages.forEach(img => {
+    if (img.complete) {
+      // Forzar recálculo para imágenes ya cargadas
+      if (macyInstance) macyInstance.recalculate(true);
+    } else {
+      // Escuchar evento load para imágenes que aún se están cargando
+      img.addEventListener('load', () => {
+        if (macyInstance) macyInstance.recalculate(true);
+      });
+    }
+  });
+  // Agregar antes de inicializar lightGallery
+  console.warn = (function(originalWarn) {
+    return function(msg, ...args) {
+      if (!msg.includes('license key is not valid')) {
+        originalWarn.apply(console, [msg, ...args]);
+      }
+    };
+  })(console.warn);
+
+  try {
+  // Verificar que la galería tiene elementos para lightgallery
+  if (gallery.querySelector(".image-item")) {
+    // Asegurarnos de que no haya instancias previas
+    safeDestroyLightGallery();
+    
+    // Dentro del bloque try de inicialización de LightGallery
+    window.lgInstance = lightGallery(gallery, {
+      selector: ".image-item", 
+      mode: 'lg-fade',
+      plugins: [lgZoom, lgAutoplay, lgFullscreen, lgThumbnail, lgRotate],
+      speed: 300,
+      autoplay: true,
+      fullScreen: true,
+      thumbnail: true,        // Mantener habilitado el soporte de thumbnails
+      animateThumb: true,     
+      showThumbByDefault: true, // CAMBIO AQUÍ: Ocultar thumbnails inicialmente
+      rotate: true,
+      zoomFromOrigin: true,
+      allowMediaOverlap: true,
+      toggleThumb: true,      // Permitir mostrar/ocultar thumbnails
+    });
+
+    // Añadir listener para cargar thumbnails cuando se muestren
+    gallery.addEventListener('lgAfterSlide', function(event) {
+      // Solo procesar si los thumbnails están visibles
+      if (document.querySelector('.lg-thumb-outer') && 
+          !document.querySelector('.lg-thumb-outer').classList.contains('lg-thumb-hide')) {
+        cargarThumbnailActual(event.detail.index);
+      }
+    });
+
+    // Añadir listener para el botón de toggle thumbnails
+    gallery.addEventListener('lgToggleThumb', function() {
+  setTimeout(function() {
+    // Verificar si los thumbnails están visibles ahora
+    if (document.querySelector('.lg-thumb-outer') && 
+        !document.querySelector('.lg-thumb-outer').classList.contains('lg-thumb-hide')) {
+      // Cargar los primeros thumbnails cuando se activan
+      cargarThumbnailsVisibles();
+      
+      // También configurar el desplazamiento para cargar más thumbnails
+      const thumbStrip = document.querySelector('.lg-thumb');
+      if (thumbStrip) {
+        thumbStrip.addEventListener('scroll', function() {
+          // Obtener el índice actual
+          const currentIndex = document.querySelector('.lg-current')?.getAttribute('data-lg-index');
+          if (currentIndex !== undefined) {
+            // Llamar con un ligero debounce para evitar muchas llamadas durante el scroll
+            clearTimeout(thumbStrip.scrollTimer);
+            thumbStrip.scrollTimer = setTimeout(function() {
+              cargarThumbnailActual(parseInt(currentIndex, 10));
+            }, 100);
+          }
+        });
+      }
+    }
+  }, 50);
+});
+
+  }
+  } catch (e) {
+    console.warn("Error al inicializar lightgallery:", e);
+    window.lgInstance = null;
+  }
+
+  initializeMacy();
+
+
+  const allVideos = document.querySelectorAll("#gallery video");
+  
+  // 3. A cada video le ponemos un listener
+  allVideos.forEach((vid) => {
+    vid.addEventListener("loadedmetadata", () => {
+      // 4. Cuando el video ya obtuvo sus dimensiones:
+      if (macyInstance) {
+        macyInstance.recalculate(true);
+      }
+    });
+  });
+
+        setTimeout(() => gallery.style.visibility = 'visible', 150);
+      });
+
+      setupLazyImageLoading();
+      setupLazyVideoLoading();
+    }
+
+    function createFileCard(item) {
+  const card = document.createElement("div");
+  card.className = "card file-card hidden";
+  
+  const fileWrapper = document.createElement("div");
+  fileWrapper.className = "file-wrapper";
+  
+  // Iconos según tipo de archivo - URLs completas independientes
+  const iconMap = {
+    pdf: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+    word: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+    excel: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+    powerpoint: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+    zip: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+    text: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+    audio: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+    image: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+    video: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+    file: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png"
+  };
+  
+  const icon = document.createElement("img");
+  icon.className = "file-icon-img";
+  // Usar directamente la URL completa del mapa de iconos
+  icon.src = iconMap[item.fileType] || iconMap.file;
+  icon.alt = item.fileType || "file";
+  
+  const fileInfo = document.createElement("div");
+  fileInfo.className = "file-info";
+  
+  // Nombre del archivo
+  const fileName = document.createElement("div");
+  fileName.className = "file-name";
+  fileName.textContent = item.name || "Archivo";
+  
+  // Tipo de archivo
+  const fileType = document.createElement("div");
+  fileType.className = "file-type";
+  fileType.textContent = (item.fileType || "archivo").toUpperCase();
+  
+  fileInfo.appendChild(fileName);
+  fileInfo.appendChild(fileType);
+  
+  fileWrapper.appendChild(icon);
+  fileWrapper.appendChild(fileInfo);
+  
+  // Enlace para descargar/ver
+  const link = document.createElement("a");
+  link.href = item.src;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.className = "file-link";
+  link.appendChild(fileWrapper);
+  
+  // Si es PDF, permitir previsualización
+  if (item.fileType === "pdf") {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      openPdfViewer(item.src, item.name);
+    });
+  }
+  
+  card.appendChild(link);
+  return card;
+}
+
+// Función para crear tarjetas de código
+function createCodeCard(item) {
+  const card = document.createElement("div");
+  card.className = "card code-card hidden";
+  
+  const codeWrapper = document.createElement("div");
+  codeWrapper.className = "code-wrapper";
+  
+  // Encabezado con lenguaje y título
+  const codeHeader = document.createElement("div");
+  codeHeader.className = "code-header";
+  
+  const langBadge = document.createElement("span");
+  langBadge.className = "code-language";
+  langBadge.textContent = item.language || "text";
+  
+  const codeTitle = document.createElement("span");
+  codeTitle.className = "code-title";
+  codeTitle.textContent = item.caption || "Código";
+  
+  codeHeader.appendChild(langBadge);
+  codeHeader.appendChild(codeTitle);
+  
+  // Contenedor del código (truncado)
+  const codePreview = document.createElement("pre");
+  codePreview.className = "code-preview";
+  
+  const codeContent = document.createElement("code");
+  codeContent.className = `language-${item.language || "text"}`;
+  
+  // Truncar código largo
+  const previewText = item.content.length > 150 
+    ? item.content.substring(0, 150) + "..." 
+    : item.content;
+  
+  codeContent.textContent = previewText;
+  codePreview.appendChild(codeContent);
+  
+  codeWrapper.appendChild(codeHeader);
+  codeWrapper.appendChild(codePreview);
+  
+  // Hacer que toda la tarjeta sea clickeable
+  card.appendChild(codeWrapper);
+  card.addEventListener('click', function() {
+    openCodeViewer(item.content, item.language, item.caption);
+  });
+  
+  return card;
+}
+
+function createEmbedCard(item) {
+  const card = document.createElement("div");
+  card.className = "card embed-card hidden";
+  
+  // Para YouTube y Vimeo, mostrar directamente un iframe
+  if (item.embedType === "youtube" || item.embedType === "vimeo") {
+    // Crear un contenedor con posición relativa para el video y tooltip
+    const videoOuterContainer = document.createElement("div");
+    videoOuterContainer.className = "video-outer-container";
+    
+    const videoContainer = document.createElement("div");
+    videoContainer.className = "video-container";
+    
+    let srcWithParams = item.src;
+    
+    // Reemplazar youtube.com con youtube-nocookie.com
+    if (item.embedType === "youtube") {
+      // Primero convertir la URL a nocookie
+      srcWithParams = srcWithParams.replace('youtube.com', 'youtube-nocookie.com');
+      
+      // Añadir parámetros para reducir anuncios y telemetría
+      const separator = srcWithParams.includes('?') ? '&' : '?';
+      srcWithParams = `${srcWithParams}${separator}rel=0&modestbranding=1&enablejsapi=0`;
+    }
+    
+    const iframe = document.createElement("iframe");
+    iframe.src = srcWithParams;
+    iframe.setAttribute('loading', 'lazy'); // Carga perezosa para iframes
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation'); // Sandbox para más seguridad
+    iframe.frameBorder = "0";
+    iframe.allowFullscreen = true;
+    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+    
+    videoContainer.appendChild(iframe);
+    videoOuterContainer.appendChild(videoContainer);
+    
+    card.appendChild(videoOuterContainer);
+  } 
+  // Para otros tipos de enlaces, usar diseño de archivo
+  else {
+    const fileWrapper = document.createElement("div");
+    fileWrapper.className = "file-wrapper";
+    
+    // Iconos según tipo de embed - URLs completas independientes
+    const iconMap = {
+      youtube: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+      vimeo: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+      twitter: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+      instagram: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+      facebook: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+      github: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+      figma: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+      maps: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png",
+      default: "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/update.png"
+    };
+    
+    // Determinar el tipo de enlace basado en la URL
+    let embedIconType = "default";
+    if (item.src) {
+      const url = item.src.toLowerCase();
+      if (url.includes('youtube')) embedIconType = "youtube";
+      else if (url.includes('vimeo')) embedIconType = "vimeo";
+      else if (url.includes('twitter')) embedIconType = "twitter";
+      else if (url.includes('instagram')) embedIconType = "instagram";
+      else if (url.includes('facebook')) embedIconType = "facebook";
+      else if (url.includes('github')) embedIconType = "github";
+      else if (url.includes('figma')) embedIconType = "figma";
+      else if (url.includes('maps.google') || url.includes('goo.gl/maps')) embedIconType = "maps";
+    }
+    
+    const icon = document.createElement("img");
+    icon.className = "file-icon-img";
+    icon.src = iconMap[embedIconType] || iconMap.default;
+    icon.alt = item.embedType || "enlace";
+    
+    const fileInfo = document.createElement("div");
+    fileInfo.className = "file-info";
+    
+    // Nombre del enlace
+    const fileName = document.createElement("div");
+    fileName.className = "file-name";
+    fileName.textContent = item.title || "Enlace externo";
+    
+    // Tipo de enlace
+    const fileType = document.createElement("div");
+    fileType.className = "file-type";
+    fileType.textContent = (embedIconType === "default" ? "URL" : embedIconType).toUpperCase();
+    
+    fileInfo.appendChild(fileName);
+    fileInfo.appendChild(fileType);
+    
+    fileWrapper.appendChild(icon);
+    fileWrapper.appendChild(fileInfo);
+    
+    const link = document.createElement("a");
+    link.href = item.src;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.className = "file-link";
+    link.appendChild(fileWrapper);
+    
+    card.appendChild(link);
+  }
+  
+  return card;
+}
+// Función para abrir visor de PDF
+function openPdfViewer(src, title) {
+  const modal = document.createElement("div");
+  modal.className = "pdf-modal";
+  
+  const modalContent = document.createElement("div");
+  modalContent.className = "pdf-modal-content";
+  
+  const modalHeader = document.createElement("div");
+  modalHeader.className = "pdf-modal-header";
+  
+  const modalTitle = document.createElement("div");
+  modalTitle.className = "pdf-modal-title";
+  modalTitle.textContent = title || "Documento PDF";
+  
+  const closeBtn = document.createElement("span");
+  closeBtn.className = "pdf-modal-close";
+  closeBtn.innerHTML = "&times;";
+  closeBtn.onclick = function() {
+    document.body.removeChild(modal);
+  };
+  
+  modalHeader.appendChild(modalTitle);
+  modalHeader.appendChild(closeBtn);
+  
+  const iframe = document.createElement("iframe");
+  iframe.className = "pdf-iframe";
+  iframe.src = src;
+  iframe.width = "100%";
+  iframe.height = "100%";
+  
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(iframe);
+  modal.appendChild(modalContent);
+  
+  document.body.appendChild(modal);
+  
+  // Cerrar con Escape
+  document.addEventListener('keydown', function closeOnEsc(e) {
+    if (e.key === 'Escape') {
+      document.body.removeChild(modal);
+      document.removeEventListener('keydown', closeOnEsc);
+    }
+  });
+  
+  // También cerrar al hacer clic fuera del contenido
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      document.body.removeChild(modal);
+    }
+  });
+}
+
+// Función para abrir visor de código
+function openCodeViewer(content, language, title) {
+  const modal = document.createElement("div");
+  modal.className = "code-modal";
+  
+  const modalContent = document.createElement("div");
+  modalContent.className = "code-modal-content";
+  
+  const modalHeader = document.createElement("div");
+  modalHeader.className = "code-modal-header";
+  
+  const headerInfo = document.createElement("div");
+  headerInfo.className = "code-modal-header-info";
+  
+  const langBadge = document.createElement("span");
+  langBadge.className = "code-language-badge";
+  langBadge.textContent = language || "text";
+  
+  const modalTitle = document.createElement("span");
+  modalTitle.className = "code-modal-title";
+  modalTitle.textContent = title || "Código";
+  
+  headerInfo.appendChild(langBadge);
+  headerInfo.appendChild(modalTitle);
+  
+  const closeBtn = document.createElement("span");
+  closeBtn.className = "code-modal-close";
+  closeBtn.innerHTML = "&times;";
+  closeBtn.onclick = function() {
+    document.body.removeChild(modal);
+  };
+  
+  modalHeader.appendChild(headerInfo);
+  modalHeader.appendChild(closeBtn);
+  
+  const codeContainer = document.createElement("pre");
+  codeContainer.className = "code-modal-container";
+  
+  const codeElement = document.createElement("code");
+  codeElement.className = `language-${language || "text"}`;
+  codeElement.textContent = content;
+  
+  codeContainer.appendChild(codeElement);
+  
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(codeContainer);
+  modal.appendChild(modalContent);
+  
+  document.body.appendChild(modal);
+  
+  // Aplicar resaltado de sintaxis
+  if (typeof hljs !== 'undefined') {
+    hljs.highlightElement(codeElement);
+  }
+  
+  // Cerrar con Escape
+  document.addEventListener('keydown', function closeOnEsc(e) {
+    if (e.key === 'Escape') {
+      document.body.removeChild(modal);
+      document.removeEventListener('keydown', closeOnEsc);
+    }
+  });
+  
+  
+  // También cerrar al hacer clic fuera del contenido
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      document.body.removeChild(modal);
+    }
+  });
+}
+
+// Mejora de la función setupLazyImageLoading
+function setupLazyImageLoading() {
+  const imageObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        const src = img.getAttribute('data-src');
+        
+        if (src) {
+          // Crear una imagen temporal para pre-cargar
+          const tempImg = new Image();
+          
+          // Cuando la imagen se carga, aplicarla al elemento visible
+          tempImg.onload = function() {
+            // Aplicar la imagen cargada
+            img.src = src;
+            img.removeAttribute('data-src');
+            
+            // Importante: Permitir que la imagen mantenga sus proporciones originales
+            // img.style.aspectRatio = tempImg.width + '/' + tempImg.height;
+            
+            // Recalcular Macy DESPUÉS de que la imagen se muestre con tamaño real
+            setTimeout(() => {
+              if (macyInstance) {
+                macyInstance.recalculate(true);
+              }
+            }, 50);
+          };
+          
+          // Iniciar la carga
+          tempImg.src = src;
+        }
+        
+        observer.unobserve(img);
+      }
+    });
+  }, { rootMargin: '200px 20px' });
+  
+  // Aplicar a todas las imágenes en galería
+  document.querySelectorAll('#gallery img[data-src]').forEach(img => {
+    imageObserver.observe(img);
+  });
+}
+
+// Añade esta función para lazy loading de videos
+function setupLazyVideoLoading() {
+  const videoObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const video = entry.target;
+        const src = video.getAttribute('data-src');
+        
+        if (src) {
+          // Preservar dimensiones antes de cargar
+          if (video.poster) {
+            const posterImg = new Image();
+            posterImg.onload = function() {
+              video.setAttribute('data-width', posterImg.width);
+              video.setAttribute('data-height', posterImg.height);
+              
+              // Ahora cargamos el video
+              video.src = src;
+              video.removeAttribute('data-src');
+              
+              // Recalcular al cargar los metadatos del video
+              video.addEventListener('loadedmetadata', () => {
+                if (macyInstance) macyInstance.recalculate(true);
+              });
+            };
+            posterImg.src = video.poster;
+          } else {
+            // Sin poster, solo cargamos el video
+            video.src = src;
+            video.removeAttribute('data-src');
+            
+            video.addEventListener('loadedmetadata', () => {
+              if (macyInstance) macyInstance.recalculate(true);
+            });
+          }
+        }
+        
+        observer.unobserve(video);
+      }
+    });
+  }, { rootMargin: '200px 0px' });
+  
+  // Aplicar a todos los videos en galería
+  document.querySelectorAll('#gallery video[data-src]').forEach(video => {
+    videoObserver.observe(video);
+  });
+}
+function createImageCard(item) {
+  const card = document.createElement("div");
+  card.className = "card hidden";
+  
+  const link = document.createElement("a");
+  link.href = item.src;
+  link.className = "image-item";
+  
+  // Configurar atributos necesarios para LightGallery
+  link.setAttribute('data-src', item.src);
+  // No cargar thumbnail al inicio, solo guardar la referencia
+  link.setAttribute('data-thumb', 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"%3E%3C/svg%3E');
+  link.setAttribute('data-real-thumb', item.src); // Almacenar la URL real para cargar después
+  link.setAttribute('data-sub-html', item.name || '');
+  
+  // Ya no necesitamos la imagen oculta para LightGallery
+  // const thumbImg = document.createElement("img");
+  // thumbImg.src = item.src; 
+  // thumbImg.style.display = "none";
+  // thumbImg.className = "thumb-for-lg";
+  // link.appendChild(thumbImg);
+  
+  // Usar lazy loading para la imagen visible del card
+  const img = document.createElement("img");
+  img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"%3E%3C/svg%3E';
+  img.setAttribute('data-src', item.src);
+  img.style.backgroundColor = "#232323";
+  img.loading = "lazy";
+  
+  link.appendChild(img);
+  card.appendChild(link);
+  return card;
+}
+
+// Función mejorada para cargar el thumbnail actual y los adyacentes
+function cargarThumbnailActual(index) {
+  // Obtener todos los thumbnails
+  const thumbnails = document.querySelectorAll('.lg-thumb-item img');
+  if (!thumbnails.length) return;
+  
+  // Rango de thumbnails a cargar inmediatamente (actual + 5 a cada lado)
+  const minIndex = Math.max(0, index - 5);
+  const maxIndex = Math.min(thumbnails.length - 1, index + 5);
+  
+  // Cargar los thumbnails en el rango inmediato
+  for (let i = minIndex; i <= maxIndex; i++) {
+    const thumbImg = thumbnails[i];
+    if (!thumbImg) continue;
+    
+    // Verificar si el thumbnail necesita cargarse
+    if (!thumbImg.src || thumbImg.src.includes('data:image/svg')) {
+      // Obtener la URL real del thumbnail
+      const galleryItems = document.querySelectorAll('.image-item');
+      if (galleryItems[i] && galleryItems[i].getAttribute('data-real-thumb')) {
+        thumbImg.src = galleryItems[i].getAttribute('data-real-thumb');
+      }
+    }
+  }
+  
+  // Iniciar la carga progresiva de más thumbnails en segundo plano
+  setTimeout(() => cargarThumbnailsProgresivamente(index, thumbnails), 300);
+}
+
+// Nueva función para cargar progresivamente más thumbnails
+function cargarThumbnailsProgresivamente(index, thumbnails) {
+  if (!thumbnails || !thumbnails.length) return;
+  
+  const totalThumbs = thumbnails.length;
+  const galleryItems = document.querySelectorAll('.image-item');
+  
+  // Verificar si todavía está abierto el lightgallery
+  if (!document.querySelector('.lg-outer')) return;
+  
+  // Verificar si los thumbnails están visibles
+  if (!document.querySelector('.lg-thumb-outer') || 
+      document.querySelector('.lg-thumb-outer').classList.contains('lg-thumb-hide')) {
+    return;
+  }
+  
+  // Cargar en círculos concéntricos alrededor del índice actual
+  // Primero los que ya fueron cargados por cargarThumbnailActual (±5)
+  // Luego en círculos crecientes: ±7, ±10, ±15, etc.
+  let cargarPendientes = false;
+  
+  // Radios de carga en orden de prioridad
+  const radios = [7, 10, 15, 20, 30, 50, totalThumbs];
+  
+  for (const radio of radios) {
+    // Calcular rango para este radio
+    const minIdx = Math.max(0, index - radio);
+    const maxIdx = Math.min(totalThumbs - 1, index + radio);
+    
+    // Verificar si hay thumbnails pendientes en este rango
+    let pendientesEnRango = false;
+    
+    for (let i = minIdx; i <= maxIdx; i++) {
+      // Saltar los que ya están en proceso de carga o cargados
+      if (i >= index-5 && i <= index+5) continue;
+      
+      const thumbImg = thumbnails[i];
+      if (!thumbImg) continue;
+      
+      if (!thumbImg.src || thumbImg.src.includes('data:image/svg')) {
+        // Encontramos un thumbnail pendiente, cargar este y parar
+        if (galleryItems[i] && galleryItems[i].getAttribute('data-real-thumb')) {
+          thumbImg.src = galleryItems[i].getAttribute('data-real-thumb');
+          pendientesEnRango = true;
+          cargarPendientes = true;
+          break; // Cargamos uno por cada llamada para evitar saturar
+        }
+      }
+    }
+    
+    // Si encontramos y cargamos uno en este rango, paramos la iteración
+    if (pendientesEnRango) break;
+  }
+  
+  // Si quedan thumbnails por cargar, programamos otra carga en breve
+  if (cargarPendientes) {
+    setTimeout(() => cargarThumbnailsProgresivamente(index, thumbnails), 150);
+  }
+}
+
+// Modificación para la función que carga thumbnails cuando se muestran
+function cargarThumbnailsVisibles() {
+  // Obtener el contenedor de thumbnails
+  const thumbContainer = document.querySelector('.lg-thumb');
+  if (!thumbContainer) return;
+  
+  // Obtener el índice actual para cargarlo y sus alrededores inmediatamente
+  const currentIndex = document.querySelector('.lg-current')?.getAttribute('data-lg-index');
+  if (currentIndex !== undefined) {
+    cargarThumbnailActual(parseInt(currentIndex, 10));
+  }
+  
+  // También configurar un IntersectionObserver para cargar los que entran en viewport
+  const thumbObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const thumbItem = entry.target;
+        const thumbImg = thumbItem.querySelector('img');
+        
+        if (thumbImg && (!thumbImg.src || thumbImg.src.includes('data:image/svg'))) {
+          // Buscar el índice del thumbnail
+          const thumbIndex = Array.from(document.querySelectorAll('.lg-thumb-item')).indexOf(thumbItem);
+          
+          // Buscar la URL real correspondiente
+          const galleryItems = document.querySelectorAll('.image-item');
+          if (galleryItems[thumbIndex] && galleryItems[thumbIndex].getAttribute('data-real-thumb')) {
+            thumbImg.src = galleryItems[thumbIndex].getAttribute('data-real-thumb');
+          }
+        }
+        
+        observer.unobserve(thumbItem);
+      }
+    });
+  }, { rootMargin: '200px 0px' }); // Aumentamos el margen para precargar más temprano
+  
+  // Observar todos los thumbnails
+  document.querySelectorAll('.lg-thumb-item').forEach(thumbItem => {
+    thumbObserver.observe(thumbItem);
+  });
+}
+
+function preloadThumbnails() {
+  // Ya no precargamos nada, se cargará bajo demanda
+}
+
+function initializeMacy() {
+  // Si ya existe una instancia, la removemos
+  if (macyInstance) macyInstance.remove(true);
+
+  let columns, breakAtConfig;
+  if (forcedColumnCount !== null) {
+    columns = forcedColumnCount;
+    breakAtConfig = {};
+  } else {
+    columns = 6;
+    breakAtConfig = {
+      1200: 3,
+      768: 2,
+      480: 2
+    };
+  }
+
+  macyInstance = Macy({
+    container: "#gallery",
+    trueOrder: false,
+    margin: { x: 16, y: 16 },
+    columns: columns,
+    breakAt: breakAtConfig,
+    waitForImages: false, // Importante: no esperar a que las imágenes se carguen
+    useOwnImageLoader: true // Usaremos nuestro propio sistema de carga
+  });
+
+  // Forzar un recalculo inicial
+  setTimeout(() => {
+    macyInstance.recalculate(true);
+    document.getElementById('gallery').style.visibility = 'visible';
+  }, 100);
+
+  // Recalcular cuando se cargue completamente la ventana
+  window.addEventListener('load', () => {
+    if (macyInstance) macyInstance.recalculate(true);
+  });
+}
+
+function saveTreeScroll() {
+  const treeContainer = document.getElementById('customTree');
+  if (treeContainer) {
+    localStorage.setItem('treeScrollTop', treeContainer.scrollTop);
+  }
+}
+
+// Restaura la posición del scroll del árbol
+function restoreTreeScroll() {
+  const treeContainer = document.getElementById('customTree');
+  const scrollTop = parseInt(localStorage.getItem('treeScrollTop') || '0', 10);
+  treeContainer.scrollTop = scrollTop;
+}
+
+function markSelectedLeaf(span) {
+  // Opcional: elimina la clase 'selected' de otros nodos leaf si se desea que solo haya uno marcado.
+  const allLeafNodes = document.querySelectorAll('.tree-node.leaf');
+  allLeafNodes.forEach(node => node.classList.remove('selected'));
+  // Marca el nodo actual
+  span.classList.add('selected');
+}
+
+function closeMenuPopover() {
+  saveTreeScroll();
+  const menu = document.getElementById("menuPopover");
+  menu.classList.remove("animate-in");
+  menu.classList.add("animate-out");
+  menu.addEventListener("animationend", function handler() {
+    menu.classList.add("hidden");
+    menu.classList.remove("animate-out");
+    menu.removeEventListener("animationend", handler);
+  });
+}
+
+// Carga el árbol solo si no está en caché
+let treeLoaded = false;
+async function loadCustomTree(force = false) {
+  const treeContainer = document.getElementById('customTree');
+  if (treeLoaded && !force) {
+    // NO restaures el scroll aquí
+    return;
+  }
+  treeContainer.innerHTML = ''; // Limpiar contenido previo
+  try {
+    const res = await fetch("/notion/get-quick-tree");
+    if (!res.ok) throw new Error("Error al obtener el árbol rápido.");
+    const json = await res.json();
+    const data = json.data || json;
+    const ul = document.createElement('ul');
+    data.forEach(item => {
+      const node = createTreeNode(item);
+      ul.appendChild(node);
+    });
+    treeContainer.appendChild(ul);
+    treeLoaded = true;
+    // NO restaures el scroll aquí
+  } catch (error) {
+    console.error("Error al cargar el árbol personalizado:", error);
+  }
+}
+
+let treeCache = {};
+let expandedNodes = JSON.parse(localStorage.getItem('expandedNodes') || '[]');
+let selectedNodeId = localStorage.getItem('selectedNodeId') || null;
+
+
+function scrollToTopOrBottom() {
+  // Calcula la mitad de la altura total de la página
+  const halfway = document.body.scrollHeight / 2;
+
+  // Si la posición actual de scroll es menor que la mitad, se desplaza hacia abajo, de lo contrario, hacia arriba
+  if (window.scrollY < halfway) {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+document.getElementById('backToToporbottom').addEventListener('click', scrollToTopOrBottom);
+
+// 2. Guardar estado
+function saveTreeState() {
+  localStorage.setItem('expandedNodes', JSON.stringify(expandedNodes));
+  localStorage.setItem('selectedNodeId', selectedNodeId);
+}
+
+// 3. Modifica createTreeNode para usar caché y restaurar estado
+function createTreeNode(item) {
+  const li = document.createElement('li');
+  const startsWithStar = item.title.trim().startsWith('*');
+  const displayTitle = startsWithStar 
+    ? item.title.trim().substring(1).trim()
+    : item.title;
+
+  const span = document.createElement('span');
+  span.classList.add('tree-node');
+  // Añadir el atributo data-id para poder encontrarlo después
+  span.setAttribute('data-id', item.id);
+  
+  if (startsWithStar) {
+    span.textContent = displayTitle;
+    span.classList.add('leaf');
+  } else {
+    span.classList.add('expandable');
+    const icon = document.createElement('img');
+    icon.src = "https://raw.githubusercontent.com/wilzamguerrero/SDZ/main/SDZ_custom/icon2/folderlist4.png";
+    icon.className = "tree-folder-icon";
+    icon.alt = "Carpeta";
+    span.appendChild(icon);
+    span.appendChild(document.createTextNode(displayTitle));
+  }
+
+
+  // Restaurar seleccionado
+  if (item.id === selectedNodeId) span.classList.add('selected');
+
+  // Evento de clic modificado para usar el sistema de historial
+  span.addEventListener('click', async function (event) {
+    event.stopPropagation();
+    const treeContainer = document.getElementById('customTree');
+    treeContainer.classList.add('loading-blur');
+    const nodeId = span.getAttribute('data-id');
+
+    if (startsWithStar) {
+      selectedNodeId = item.id;
+      saveTreeState();
+      markSelectedLeaf(span);
+      updateCurrentLevelTitle(displayTitle, true);
+      
+      // Si el nodo hoja no tiene 'items', haz fetch para obtenerlos
+      let data = item;
+      if (!item.items) {
+        try {
+          const res = await fetch(`/notion/toggle/${item.id}`);
+          if (!res.ok) throw new Error(`Error al cargar el nodo hoja: ${res.statusText}`);
+          data = await res.json();
+        } catch (error) {
+          console.error("Error al cargar el nodo hoja:", error);
+          treeContainer.classList.remove('loading-blur');
+          closeMenuPopover(); 
+          return;
+        }
+      }
+
+      await loadGallery(data);
+      updateCurrentLevelTitle(displayTitle);
+
+      const title = displayTitle || 'Contenido';
+      window.history.pushState({ nodeId: nodeId }, title, `#node=${nodeId}`);
+
+
+  setTimeout(() => {
+    treeContainer.classList.remove('loading-blur');
+    closeMenuPopover();      
+  }, 0);
+  return;
+}
+
+let childUl = li.querySelector('ul');
+if (childUl) {
+  // Quita la clase 'expanded' de TODOS los nodos expandibles antes de marcar el actual
+  document.querySelectorAll('.tree-node.expandable.expanded').forEach(node => {
+    node.classList.remove('expanded');
+  });
+
+  // IMPORTANT: Check if it's collapsed BEFORE toggling
+  const wasCollapsed = childUl.classList.contains('collapsed');
+
+  // Toggle the collapsed state
+  childUl.classList.toggle('collapsed');
+
+  // Marca el nodo expandido y actualiza el array de nodos expandidos
+  if (wasCollapsed) {
+    span.classList.add('expanded');
+    if (!expandedNodes.includes(item.id)) expandedNodes.push(item.id);
+  } else {
+    span.classList.remove('expanded');
+    expandedNodes = expandedNodes.filter(id => id !== item.id);
+  }
+
+  saveTreeState();
+  treeContainer.classList.remove('loading-blur');
+  return;
+}
+
+    // 4. Usa caché si existe
+    let data;
+    if (treeCache[item.id]) {
+      data = treeCache[item.id];
+    } else {
+      try {
+        const res = await fetch(`/notion/toggle/${item.id}`);
+        if (!res.ok) throw new Error(`Error al cargar el toggle: ${res.statusText}`);
+        data = await res.json();
+        treeCache[item.id] = data; // Guardar en caché
+      } catch (error) {
+        console.error("Error al cargar el nodo:", error);
+        treeContainer.classList.remove('loading-blur');
+        return;
+      }
+    }
+
+    // Galería
+    if (data.items && data.items.length > 0) loadGallery(data);
+
+    // Si es hoja, no crear subárbol
+    if (startsWithStar) {
+      treeContainer.classList.remove('loading-blur');
+      return;
+    }
+
+    // Subárbol
+    if (data.children && data.children.length > 0) {
+  childUl = document.createElement('ul');
+  childUl.classList.add('child-tree');
+  data.children.forEach(child => {
+    const childNode = createTreeNode(child);
+    childUl.appendChild(childNode);
+  });
+  li.appendChild(childUl);
+
+  // Marcar como expandido visualmente y en el array
+  span.classList.add('expanded');
+  if (!expandedNodes.includes(item.id)) expandedNodes.push(item.id);
+  saveTreeState();
+}
+    treeContainer.classList.remove('loading-blur');
+  });
+
+  // 5. Si debe estar expandido, expande automáticamente
+  if (!startsWithStar && expandedNodes.includes(item.id)) {
+    setTimeout(async () => {
+      span.click();
+    }, 0);
+  }
+
+  li.appendChild(span);
+  return li;
+}
+
+
+
+async function loadCustomTree(force = false) {
+  const treeContainer = document.getElementById('customTree');
+  treeContainer.innerHTML = ''; // Limpiar contenido previo
+
+  let data;
+  if (!force && window.treeDataCache) {
+    data = window.treeDataCache;
+  } else {
+    try {
+      const res = await fetch("/notion/get-quick-tree");
+      if (!res.ok) throw new Error("Error al obtener el árbol rápido.");
+      const json = await res.json();
+      data = json.data || json;
+      window.treeDataCache = data;
+    } catch (error) {
+      console.error("Error al cargar el árbol personalizado:", error);
+      data = [];
+    }
+  }
+
+  const ul = document.createElement('ul');
+  data.forEach(item => {
+    const node = createTreeNode(item);
+    ul.appendChild(node);
+  });
+  treeContainer.appendChild(ul);
+}
+
+
+document.addEventListener("click", function(e) {
+  const menu = document.getElementById("menuPopover");
+  const button = document.getElementById("showAllFolders");
+  // Si el menú está abierto y el click ocurrió fuera del menú y del botón, se cierra.
+  if (!menu.classList.contains("hidden") && 
+      !menu.contains(e.target) && 
+      !button.contains(e.target)
+  ) {
+    closeMenuPopover();
+  }
+});
+
+
+function closeColumnOptions() {
+  const optionsMenu = document.getElementById("columnOptions");
+  if (!optionsMenu.classList.contains("hidden")) {
+    optionsMenu.classList.remove("show-numbers");
+    optionsMenu.classList.add("hide-numbers");
+    optionsMenu.addEventListener("animationend", function handler() {
+      optionsMenu.classList.add("hidden");
+      optionsMenu.classList.remove("hide-numbers");
+      optionsMenu.removeEventListener("animationend", handler);
+    });
+  }
+}
+
+document.getElementById("toggleColumnBtn").onclick = () => {
+  const optionsMenu = document.getElementById("columnOptions");
+  // Si ya está visible, ciérralo con animación de salida
+  if (!optionsMenu.classList.contains("hidden")) {
+    closeColumnOptions();
+    return;
+  }
+  // Si está oculto, lo mostramos con animación de entrada.
+  optionsMenu.classList.remove("hidden", "hide-numbers");
+  optionsMenu.classList.add("show-numbers");
+};
+
+// Cierra el menú de columnas si haces click fuera de él y del botón
+document.addEventListener("click", function(e) {
+  const optionsMenu = document.getElementById("columnOptions");
+  const toggleBtn = document.getElementById("toggleColumnBtn");
+  if (!optionsMenu.classList.contains("hidden") &&
+      !optionsMenu.contains(e.target) &&
+      !toggleBtn.contains(e.target)
+  ) {
+    closeColumnOptions();
+  }
+});
+
+
+document.querySelectorAll('.button-style').forEach(btn => {
+  const tooltip = btn.querySelector('.custom-tooltip');
+  if (!tooltip) return;
+
+  // Oculta el tooltip al hacer click
+  btn.addEventListener('click', () => {
+    tooltip.classList.add('tooltip-hide-on-click');
+  });
+
+  // Al entrar, solo muestra el tooltip si no está oculto por click
+  btn.addEventListener('mouseenter', () => {
+    if (!btn.matches(':active')) { // Si no está presionado
+      tooltip.classList.remove('tooltip-hide-on-click');
+    }
+  });
+
+  // Al salir SIEMPRE oculta el tooltip
+  btn.addEventListener('mouseleave', () => {
+    tooltip.classList.add('tooltip-hide-on-click');
+  });
+
+  // Por accesibilidad, también al perder foco
+  btn.addEventListener('blur', () => {
+    tooltip.classList.add('tooltip-hide-on-click');
+  });
+});
+
+// Además, limpia la clase si el mouse se suelta fuera del botón
+document.addEventListener('pointerup', () => {
+  document.querySelectorAll('.custom-tooltip.tooltip-hide-on-click').forEach(tooltip => {
+    tooltip.classList.remove('tooltip-hide-on-click');
+  });
+});
+
+document.querySelectorAll(".column-option").forEach(button => {
+  button.addEventListener("click", () => {
+    const selectedColumns = parseInt(button.getAttribute("data-columns"), 10);
+    // Si el número ya estaba seleccionado, se restaura la configuración responsive.
+    if (forcedColumnCount === selectedColumns) {
+      forcedColumnCount = null;
+    } else {
+      forcedColumnCount = selectedColumns;
+    }
+    initializeMacy();
+
+    // Animación de salida
+    const optionsMenu = document.getElementById("columnOptions");
+    optionsMenu.classList.add("hide-numbers");
+
+    // Espera a que termine la animación y oculta el menú
+    optionsMenu.addEventListener("animationend", function handler(e) {
+      if (e.animationName === "slideOutnumbers") {
+        optionsMenu.classList.add("hidden");
+        optionsMenu.classList.remove("hide-numbers", "show-numbers");
+        optionsMenu.removeEventListener("animationend", handler);
+      }
+    });
+  });
+});
+
+document.getElementById("toggleFullscreenBtn").addEventListener("click", function() {
+  // Si no estamos en pantalla completa, entra en ella
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.error(`Error intentando activar pantalla completa: ${err.message}`);
+    });
+  } else {
+    // Si ya estamos en pantalla completa, sal de este modo
+    document.exitFullscreen();
+  }
+});
+
+
+    function initializeMacy() {
+  // Si ya existe una instancia, la removemos
+  if (macyInstance) macyInstance.remove(true);
+
+  let columns, breakAtConfig;
+  if (forcedColumnCount !== null) {
+    columns = forcedColumnCount;
+    // En modo fijo no es necesario breakAt, a menos que desees que se comporte de manera diferente en pantallas pequeñas
+    breakAtConfig = {};
+  } else {
+    // Configuración responsive (puedes ajustarla a lo que tenías antes)
+    columns = 6;
+    breakAtConfig = {
+      1200: 3,
+      768: 2,
+      480: 2
+    };
+  }
+
+  macyInstance = Macy({
+    container: "#gallery",
+    trueOrder: false,
+    margin: { x: 16, y: 16 },
+    columns: columns,
+    breakAt: breakAtConfig
+  });
+}
+
+
+
+async function toggleMenuPopover() {
+  const menu = document.getElementById("menuPopover");
+  const controlButtons = document.getElementById('controlButtons');
+  const showControlsBtn = document.getElementById('showControlsBtn');
+
+  // Si los controles están ocultos o en animación de salida, primero muéstralos y espera
+  if (controlButtons.classList.contains('hidden') || controlButtons.classList.contains('fade-out')) {
+    showControlButtons();
+    // Espera a que la animación termine antes de abrir el menú
+    setTimeout(() => {
+      toggleMenuPopover();
+    }, 310); // Un poco más que la animación de salida
+    return;
+  }
+
+  // Si el menú ya está abierto, ciérralo
+  if (!menu.classList.contains("hidden")) {
+    closeMenuPopover();
+    return;
+  }
+
+  // Solo muestra el menú, no recarga el árbol
+  setTimeout(restoreTreeScroll, 50);
+
+  menu.classList.remove("hidden", "animate-out");
+  void menu.offsetWidth;
+  menu.classList.add("animate-in");
+}
+
+// Cargar el árbol al inicio y guardar en caché
+document.addEventListener("DOMContentLoaded", async function() {
+  try {
+    await loadCustomTree(true); // fuerza la carga y guarda en window.treeDataCache
+  } catch (e) {
+    console.error("Error precargando el árbol:", e);
+  }
+});
+// Variable para controlar si los botones ya se cargaron
+let rootButtonsLoaded = false;
+let createdRootButtonIds = new Set();
+
+// Función mejorada para prevenir duplicación
+async function loadRootTreeButtons() {
+  // Evitar cargar botones varias veces
+  if (rootButtonsLoaded) {
+    console.log('Botones de raíz ya cargados, omitiendo duplicación');
+    return;
+  }
+  
+  const container = document.getElementById('treeRootButtons');
+  
+  // MEJORADO: Detectar si ya hay botones y eliminarlos
+  if (container.children.length > 0) {
+    console.warn('Detectados botones existentes, limpiando para prevenir duplicación');
+    container.innerHTML = '';
+    createdRootButtonIds.clear();
+  }
+  
+  try {
+    // Intentar usar caché primero
+    let data;
+    if (window.rootButtonsCache) {
+      data = window.rootButtonsCache;
+      console.log('Usando caché de botones de raíz');
+    } else {
+      console.log('Cargando botones de raíz desde API');
+      const res = await fetch("/notion/get-quick-tree");
+      if (!res.ok) throw new Error("Error al obtener el árbol rápido.");
+      const json = await res.json();
+      data = json.data || json;
+      // Guardar en caché
+      window.rootButtonsCache = data;
+    }
+    
+    // Crear los botones
+    data.forEach(item => {
+      const startsWithStar = item.title.trim().startsWith('*');
+      const displayTitle = startsWithStar 
+        ? item.title.trim().substring(1).trim() 
+        : item.title.trim();
+
+      if (createdRootButtonIds.has(item.id)) {
+        console.warn(`Botón con ID ${item.id} ya existe, omitiendo`);
+        return;
+      }
+      
+      const btn = document.createElement('button');
+      btn.className = 'button-style tree-root-btn';
+      btn.textContent = displayTitle.charAt(0).toUpperCase();
+      // Mantener el title para accesibilidad pero agregar el tooltip personalizado
+
+      btn.setAttribute('data-id', item.id);
+      
+      // Crear y agregar el tooltip personalizado
+      const tooltip = document.createElement('span');
+      tooltip.className = 'custom-tooltip';
+      tooltip.textContent = displayTitle;
+      btn.appendChild(tooltip);
+      
+      if (startsWithStar) {
+        btn.setAttribute('data-direct-content', 'true');
+      }
+      
+      btn.addEventListener('click', async () => {
+        // El código del click handler se mantiene igual
+        document.querySelectorAll('.tree-root-btn.selected').forEach(b => 
+          b.classList.remove('selected'));
+        btn.classList.add('selected');
+        
+        let dataToLoad = item;
+        if (!item.items) {
+          try {
+            dataToLoad = await loadToggleDataWithCache(item.id);
+          } catch (error) {
+            console.error("Error al cargar el nodo:", error);
+            return;
+          }
+        }
+        
+        if (startsWithStar) {
+          await loadGallery(dataToLoad);
+          window.history.pushState({ nodeId: item.id }, displayTitle, `#node=${item.id}`);
+        } else {
+          await loadToggleCards(dataToLoad);
+          window.history.pushState({ nodeId: item.id }, displayTitle, `#node=${item.id}`);
+        }
+      });
+      
+      container.appendChild(btn);
+      createdRootButtonIds.add(item.id);
+    });
+    
+    // Marcar como cargados
+    rootButtonsLoaded = true;
+    console.log('Botones de raíz cargados correctamente');
+    
+  } catch (error) {
+    console.error("Error al cargar los botones de raíz:", error);
+  }
+
+  // Añadir al final de loadRootTreeButtons
+  document.querySelectorAll('.tree-root-btn').forEach(btn => {
+    const tooltip = btn.querySelector('.custom-tooltip');
+    if (!tooltip) return;
+
+    // Ocultar el tooltip al hacer clic
+    btn.addEventListener('click', () => {
+      tooltip.classList.add('tooltip-hide-on-click');
+    });
+
+    // Al entrar, solo muestra el tooltip si no está oculto por click
+    btn.addEventListener('mouseenter', () => {
+      if (!btn.matches(':active')) {
+        tooltip.classList.remove('tooltip-hide-on-click');
+      }
+    });
+
+    // Al salir SIEMPRE oculta el tooltip
+    btn.addEventListener('mouseleave', () => {
+      tooltip.classList.add('tooltip-hide-on-click');
+    });
+  });
+}
+
+// Reemplaza el evento DOMContentLoaded completo
+document.addEventListener('DOMContentLoaded', function() {
+  // Cargar los botones de raíz una sola vez
+  loadRootTreeButtons();
+  
+  // Inicializar sistema de navegación con historial
+  setupHistoryNavigation();
+  
+  // Verificar si hay un nodo en la URL al cargar la página
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#node=')) {
+    const nodeId = hash.substring(6);
+    console.log('URL inicial con nodo:', nodeId);
+    
+    // Cargar el nodo después de que el árbol esté disponible
+    setTimeout(async () => {
+      try {
+        await loadNodeById(nodeId, false);
+      } catch (e) {
+        console.error('Error cargando nodo inicial:', e);
+      }
+    }, 800);
+  }
+  
+  // El resto del código de inicialización...
+});
+
+function renderNotionRichText(richTextArr) {
+  if (!richTextArr) return "";
+  return richTextArr.map(rt => {
+    let text = rt.plain_text || "";
+    if (!text) return "";
+
+    // Aplica estilos
+    if (rt.annotations) {
+      if (rt.annotations.bold) text = `<strong>${text}</strong>`;
+      if (rt.annotations.italic) text = `<em>${text}</em>`;
+      if (rt.annotations.underline) text = `<u>${text}</u>`;
+      if (rt.annotations.strikethrough) text = `<s>${text}</s>`;
+      if (rt.annotations.code) text = `<code>${text}</code>`;
+    }
+    // Enlaces
+    if (rt.href) {
+      text = `<a href="${rt.href}" target="_blank" rel="noopener">${text}</a>`;
+    }
+    return text;
+  }).join("");
+}
+
+// Modal functions for text and headings
+function openTextModal(content, index) {
+  const modal = document.getElementById('textModal');
+  const modalContent = document.getElementById('textModalContent');
+  const prevBtn = document.getElementById('prevTextBtn');
+  const nextBtn = document.getElementById('nextTextBtn');
+  
+  // Set content
+  modalContent.innerHTML = content;
+  
+  // Update current index
+  currentTextIndex = index;
+  
+  // Update navigation buttons state
+  updateModalNavButtons();
+  
+  // Show modal with animation but without layout shift
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // Prevent scrolling on body
+
+  requestAnimationFrame(() => {
+    modal.classList.add('show');
+  });
+}
+
+function closeTextModal() {
+  const modal = document.getElementById('textModal');
+  
+  // Hide with animation
+  modal.classList.remove('show');
+  setTimeout(() => {
+    modal.style.display = 'none';
+    document.body.style.overflow = ''; // Restore scrolling
+  }, 300);
+}
+
+function updateModalNavButtons() {
+  const prevBtn = document.getElementById('prevTextBtn');
+  const nextBtn = document.getElementById('nextTextBtn');
+  
+  // Disable/enable previous button
+  prevBtn.disabled = currentTextIndex <= 0;
+  
+  // Disable/enable next button
+  nextBtn.disabled = currentTextIndex === -1 || currentTextIndex >= currentTextItems.length - 1;
+}
+
+function navigateTextModal(direction) {
+  if (currentTextIndex === -1 || currentTextItems.length === 0) return;
+  
+  // Calculate new index
+  const newIndex = currentTextIndex + direction;
+  
+  // Check boundaries
+  if (newIndex < 0 || newIndex >= currentTextItems.length) return;
+  
+  const item = currentTextItems[newIndex];
+  let content = '';
+  
+  // Generate content based on item type
+  if (item.type === "text") {
+    if (item.rich_text) {
+      content = renderNotionRichText(item.rich_text);
+    } else {
+      content = item.content;
+    }
+  } else if (item.type === "heading_1" || item.type === "heading_2" || item.type === "heading_3") {
+    const headingContent = item.rich_text ? renderNotionRichText(item.rich_text) : item.content;
+    content = '<' + item.type.replace("_", "") + '>' + headingContent + '</' + item.type.replace("_", "") + '>';
+  }
+  
+  // Open modal with new content
+  openTextModal(content, newIndex);
+}
+
+// Initialize modal events
+document.addEventListener('DOMContentLoaded', function() {
+  // Close modal when clicking close button
+  document.querySelector('.text-modal-close').addEventListener('click', closeTextModal);
+  
+  // Close modal when clicking outside content
+  document.getElementById('textModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeTextModal();
+    }
+  });
+  
+  // Navigate to previous text
+  document.getElementById('prevTextBtn').addEventListener('click', function() {
+    navigateTextModal(-1); // -1 means go back
+  });
+  
+  // Navigate to next text
+  document.getElementById('nextTextBtn').addEventListener('click', function() {
+    navigateTextModal(1); // 1 means go forward
+  });
+  
+  // Close modal with ESC key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('textModal').classList.contains('show')) {
+      closeTextModal();
+    }
+    
+    // Navigate with arrow keys
+    if (document.getElementById('textModal').classList.contains('show')) {
+      if (e.key === 'ArrowLeft') {
+        navigateTextModal(-1);
+      } else if (e.key === 'ArrowRight') {
+        navigateTextModal(1);
+      }
+    }
+  });
+});
+
+// Control de botones con temporizador
+let controlsTimer;
+
+
+// Función para mostrar los botones de control
+function showControlButtons() {
+  const controlButtons = document.getElementById('controlButtons');
+  const showControlsBtn = document.getElementById('showControlsBtn');
+
+  // Si los controles están en animación de salida, espera a que termine antes de mostrar
+  if (controlButtons.classList.contains('fade-out')) {
+    controlButtons.addEventListener('animationend', function handler() {
+      controlButtons.classList.remove('fade-out');
+      controlButtons.classList.remove('hidden');
+      controlButtons.classList.add('fade-in');
+      showControlsBtn.classList.add('hidden');
+      // Inicia el temporizador solo después de mostrar
+      clearTimeout(controlsTimer);
+      controlsTimer = setTimeout(hideControlButtons, 3000);
+      controlButtons.removeEventListener('animationend', handler);
+    });
+    return;
+  }
+
+  // Ocultar el botón principal
+  showControlsBtn.classList.add('hidden');
+
+  // Mostrar los botones de control con animación
+  controlButtons.classList.remove('hidden');
+  controlButtons.classList.add('fade-in');
+
+  // Establecer temporizador para ocultar los botones después de 3 segundos
+  clearTimeout(controlsTimer);
+  controlsTimer = setTimeout(hideControlButtons, 3000);
+}
+
+// Función para ocultar los botones de control
+// Updated function to hide control buttons AND any open menus
+function hideControlButtons() {
+  const controlButtons = document.getElementById('controlButtons');
+  const showControlsBtn = document.getElementById('showControlsBtn');
+  const menuPopover = document.getElementById('menuPopover');
+  const columnOptions = document.getElementById('columnOptions');
+
+  // Cierra los menús INMEDIATAMENTE antes de animar los controles
+  if (menuPopover && !menuPopover.classList.contains('hidden')) {
+    closeMenuPopover();
+  }
+  if (columnOptions && !columnOptions.classList.contains('hidden')) {
+    closeColumnOptions();
+  }
+
+  // Ahora anima y oculta los controles
+  controlButtons.classList.remove('fade-in');
+  controlButtons.classList.add('fade-out');
+
+  setTimeout(() => {
+    controlButtons.classList.add('hidden');
+    controlButtons.classList.remove('fade-out');
+    showControlsBtn.classList.remove('hidden');
+  }, 300);
+}
+
+// Reiniciar el temporizador cuando el usuario interactúa con los botones
+function resetControlsTimer() {
+  clearTimeout(controlsTimer);
+  controlsTimer = setTimeout(hideControlButtons, 3000);
+}
+
+// Configurar event listeners cuando el documento esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+  const showControlsBtn = document.getElementById('showControlsBtn');
+  const controlButtons = document.getElementById('controlButtons');
+  
+  // Ocultar los botones de control inicialmente
+  controlButtons.classList.add('hidden');
+  
+  // Mostrar botones cuando se hace clic en el botón principal
+  showControlsBtn.addEventListener('click', showControlButtons);
+  
+  // Reiniciar el temporizador cuando se interactúa con cualquier botón de control
+  const allControlButtons = controlButtons.querySelectorAll('button');
+  allControlButtons.forEach(button => {
+    button.addEventListener('mouseenter', resetControlsTimer);
+    button.addEventListener('click', resetControlsTimer);
+  });
+});
+
+// Función para iniciar el temporizador de inactividad
+function startInactivityTimer() {
+  clearTimeout(controlsTimer);
+  controlsTimer = setTimeout(hideControlButtons, 3000);
+}
+
+// Función para indicar que el usuario está activo
+function userIsActive() {
+  clearTimeout(controlsTimer);
+  // No reiniciamos el temporizador mientras el usuario está activo
+}
+
+// Función cuando el usuario deja de interactuar
+function userIsInactive() {
+  // Solo iniciamos el temporizador si los controles están visibles
+  const controlButtons = document.getElementById('controlButtons');
+  if (!controlButtons.classList.contains('hidden')) {
+    startInactivityTimer();
+  }
+}
+
+// Configurar event listeners para detectar interacción
+document.addEventListener('DOMContentLoaded', function() {
+  const showControlsBtn = document.getElementById('showControlsBtn');
+  const controlButtons = document.getElementById('controlButtons');
+  const menuPopover = document.getElementById('menuPopover');
+  const columnOptions = document.getElementById('columnOptions');
+  
+  // Mostrar botones cuando se hace clic en el botón principal
+  showControlsBtn.addEventListener('click', showControlButtons);
+  
+  // Áreas interactivas que deben mantener los controles visibles
+  const interactiveAreas = [
+    controlButtons,
+    menuPopover,
+    columnOptions
+  ];
+  
+  // Eventos para detectar actividad
+  interactiveAreas.forEach(area => {
+    area.addEventListener('mouseenter', userIsActive);
+    area.addEventListener('mousemove', userIsActive);
+    area.addEventListener('click', userIsActive);
+    area.addEventListener('touchstart', userIsActive);
+    area.addEventListener('touchmove', userIsActive);
+    
+    // Cuando el ratón sale del área, inicia el temporizador
+    area.addEventListener('mouseleave', userIsInactive);
+    area.addEventListener('touchend', userIsInactive);
+  });
+});
+
+let mobileInactivityTimer = null;
+
+function startMobileInactivityTimer() {
+  clearTimeout(mobileInactivityTimer);
+  mobileInactivityTimer = setTimeout(() => {
+    hideControlButtons();
+  }, 3000);
+}
+
+function resetMobileInactivityTimer() {
+  clearTimeout(mobileInactivityTimer);
+}
+
+// Dentro de tu DOMContentLoaded o después de definir los menús:
+function isMobile() {
+  return window.matchMedia("(pointer: coarse)").matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+if (isMobile()) {
+  // Al abrir menús, inicia el temporizador
+  document.getElementById('showAllFolders').addEventListener('touchend', startMobileInactivityTimer);
+  document.getElementById('toggleColumnBtn').addEventListener('touchend', startMobileInactivityTimer);
+
+  // Si el usuario toca dentro de los menús, reinicia el temporizador
+  document.getElementById('menuPopover').addEventListener('touchstart', resetMobileInactivityTimer);
+  document.getElementById('columnOptions').addEventListener('touchstart', resetMobileInactivityTimer);
+
+  // Si el usuario toca fuera, inicia el temporizador
+  document.body.addEventListener('touchstart', function(e) {
+    const menu = document.getElementById('menuPopover');
+    const columns = document.getElementById('columnOptions');
+    if (
+      (!menu.classList.contains('hidden') && !menu.contains(e.target)) ||
+      (!columns.classList.contains('hidden') && !columns.contains(e.target))
+    ) {
+      startMobileInactivityTimer();
+    }
+  });
+}
+
+// Add this to your existing click handler for expandable nodes
+function handleTreeNodeClick(e) {
+  const node = e.target.closest('.tree-node');
+  
+  if (node && node.classList.contains('expandable')) {
+    // Toggle the expanded class
+    node.classList.toggle('expanded');
+    
+    // Your existing code to expand/collapse the child tree
+    const childTree = node.nextElementSibling;
+    if (childTree && childTree.classList.contains('child-tree')) {
+      childTree.classList.toggle('collapsed');
+    }
+  }
+}
+
+// Add this utility function to your code
+function implementVirtualizedGallery() {
+  const gallery = document.getElementById('gallery');
+  const items = Array.from(gallery.children);
+  const itemHeight = 300; // Approximate height of items (adjust as needed)
+  
+  function updateVisibleItems() {
+    const viewportTop = window.scrollY;
+    const viewportBottom = viewportTop + window.innerHeight;
+    const bufferSize = window.innerHeight; // Extra buffer for smooth scrolling
+    
+    items.forEach(item => {
+      const itemTop = item.offsetTop;
+      const itemBottom = itemTop + itemHeight;
+      
+      // Check if item is in viewport (with buffer)
+      if (itemBottom >= viewportTop - bufferSize && 
+          itemTop <= viewportBottom + bufferSize) {
+        if (item.classList.contains('virtualized')) {
+          item.classList.remove('virtualized');
+        }
+      } else {
+        if (!item.classList.contains('virtualized')) {
+          item.classList.add('virtualized');
+        }
+      }
+    });
+  }
+  
+  // Call on scroll with debounce
+  let scrollTimeout;
+  window.addEventListener('scroll', () => {
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(updateVisibleItems, 100);
+  });
+  
+  // Initial update
+  updateVisibleItems();
+}
+
+// Función segura para destruir LightGallery
+function safeDestroyLightGallery() {
+  try {
+    if (window.lgInstance) {
+      // Verificar si el elemento LG existe antes de intentar destruirlo
+      const lgContainer = document.querySelector('.lg-container');
+      const lgBackdrop = document.querySelector('.lg-backdrop');
+      
+      // Si existe la instancia pero no hay elementos visibles, hacemos limpieza manual
+      if (!lgContainer && !lgBackdrop) {
+        window.lgInstance = null;
+        return;
+      }
+      
+      // Intenta destruir normalmente si los elementos existen
+      if (typeof window.lgInstance.destroy === 'function') {
+        window.lgInstance.destroy();
+      }
+      
+      // Limpieza manual adicional por si acaso
+      if (lgBackdrop) lgBackdrop.remove();
+      if (lgContainer) lgContainer.remove();
+      
+      // Siempre limpiar la referencia
+      window.lgInstance = null;
+    }
+  } catch (e) {
+    console.warn("Error controlado al destruir lightgallery:", e);
+    
+    // Limpieza de emergencia en caso de error
+    const lgElements = document.querySelectorAll('.lg-backdrop, .lg-container, .lg-outer, .lg-inner');
+    lgElements.forEach(el => el.remove());
+    
+    window.lgInstance = null;
+  }
+}
+
+// Función para mostrar indicador de carga durante la navegación
+function showLoadingIndicator() {
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'loading-overlay';
+  loadingDiv.innerHTML = '<div class="loading-spinner"></div>';
+  document.body.appendChild(loadingDiv);
+  
+  return function hideLoading() {
+    if (document.body.contains(loadingDiv)) {
+      document.body.removeChild(loadingDiv);
+    }
+  };
+}
+// Sistema de historial para navegación
+function setupHistoryNavigation() {
+  // Cuando se presiona atrás/adelante en el navegador
+  window.addEventListener('popstate', async function(event) {
+    console.log('Navegación detectada:', event.state);
+    
+    // Mostrar indicador de carga
+    const hideLoading = showLoadingIndicator();
+    
+    try {
+      // Si no hay estado, podría ser la página inicial
+      if (!event.state) {
+        // Si hay un hash en la URL, intentar cargar ese nodo
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#node=')) {
+          const nodeId = hash.substring(6);
+          console.log('Cargando desde hash:', nodeId);
+          await loadNodeById(nodeId, false);
+          
+          // Obtener y mostrar explícitamente el título (forzar actualización)
+          const title = getNodeTitle(nodeId);
+          updateCurrentLevelTitle(title, true);
+          
+          // Mostrar otra vez el título después de un breve retraso
+          setTimeout(() => {
+            updateCurrentLevelTitle(title);
+          }, 100);
+          
+          return;
+        }
+        
+        // Si no hay hash, volver a la página inicial
+        console.log('Volviendo a página inicial');
+        clearGallery();
+        updateCurrentLevelTitle('Inicio', true);
+        return;
+      }
+      
+      // Si hay estado, cargar ese nodo
+      if (event.state.nodeId) {
+        console.log('Cargando nodo:', event.state.nodeId);
+        await loadNodeById(event.state.nodeId, false);
+        
+        // Obtener y mostrar explícitamente el título (forzar actualización)
+        const title = getNodeTitle(event.state.nodeId);
+        updateCurrentLevelTitle(title, true);
+        
+        // Mostrar otra vez el título después de un breve retraso
+        setTimeout(() => {
+          updateCurrentLevelTitle(title);
+        }, 100);
+      }
+    } finally {
+      // Ocultar indicador de carga
+      hideLoading();
+    }
+  });
+  
+  // Guardar estado inicial si es necesario
+  if (!window.history.state && window.location.hash) {
+    const hash = window.location.hash;
+    if (hash.startsWith('#node=')) {
+      const nodeId = hash.substring(6);
+      const title = getNodeTitle(nodeId) || 'Contenido';
+      window.history.replaceState({ nodeId: nodeId }, title, window.location.href);
+      console.log('Estado inicial guardado:', nodeId);
+    }
+  }
+}
+
+
+function clearGallery() {
+  if (macyInstance) {
+    macyInstance.remove(true);
+    macyInstance = null;
+  }
+  
+  safeDestroyLightGallery();
+  
+  const gallery = document.getElementById('gallery');
+  gallery.style.visibility = 'hidden';
+  gallery.innerHTML = "<div class='welcome-message'></div>";
+  gallery.style.visibility = 'visible';
+}
+
+// Carga un nodo por su ID - VERSIÓN MEJORADA
+async function loadNodeById(nodeId, addToHistory = true) {
+  console.log(`Cargando nodo: ${nodeId} (addToHistory: ${addToHistory})`);
+  
+  try {
+    // Primero intentamos encontrar el nodo en la UI
+    const nodeElement = findNodeElementById(nodeId);
+    
+    if (nodeElement) {
+      console.log('Nodo encontrado en el DOM');
+      
+      // Si es un nodo hoja o un botón de raíz, simulamos el clic
+      if (nodeElement.classList.contains('leaf') || nodeElement.classList.contains('tree-root-btn')) {
+        // Antes de hacer clic, verificamos si tenemos sus datos en caché
+        let data;
+        try {
+          data = await loadToggleDataWithCache(nodeId);
+        } catch (e) {
+          console.warn('Error cargando desde caché, usamos clic normal:', e);
+          nodeElement.click();
+          return;
+        }
+        
+        // Si pudimos cargar los datos, los usamos directamente
+        if (data) {
+          // Marcar como seleccionado
+          selectedNodeId = nodeId;
+          saveTreeState();
+          
+          // Actualizar UI según corresponda
+          if (nodeElement.classList.contains('tree-root-btn')) {
+            document.querySelectorAll('.tree-root-btn.selected').forEach(b => b.classList.remove('selected'));
+            nodeElement.classList.add('selected');
+          } else if (nodeElement.classList.contains('leaf')) {
+            markSelectedLeaf(nodeElement);
+          }
+          
+          // Cargar el contenido directamente
+          if (data.title && data.title.trim().startsWith('*') || (data.items && data.items.length > 0)) {
+            await loadGallery(data);
+          } else if (data.children && data.children.length > 0) {
+            await loadToggleCards(data);
+          }
+          
+          // Si es necesario, añadir al historial
+          if (addToHistory) {
+            const title = getNodeTitle(nodeId) || 'Contenido';
+            window.history.pushState({ nodeId: nodeId }, title, `#node=${nodeId}`);
+          }
+          return;
+        }
+        
+        // Si no hay datos en caché, usamos el clic normal
+        nodeElement.click();
+        return;
+      }
+      
+      // Resto del código para nodos expandibles se mantiene igual
+      selectedNodeId = nodeId;
+      saveTreeState();
+      
+      // Cargar datos del nodo desde caché si es posible
+      try {
+        const data = await loadToggleDataWithCache(nodeId);
+        
+        // Igual que antes, cargar galería o cards según corresponda
+        if (data.items && data.items.length > 0) {
+          await loadGallery(data);
+        } else if (data.children && data.children.length > 0) {
+          await loadToggleCards(data);
+        }
+        
+        // Actualizar selección visual
+        updateSelectedNodeVisually(nodeId);
+        
+        // Añadir al historial si es necesario
+        if (addToHistory) {
+          const title = getNodeTitle(nodeId) || 'Contenido';
+          window.history.pushState({ nodeId: nodeId }, title, `#node=${nodeId}`);
+        }
+      } catch (error) {
+        console.error("Error cargando datos del nodo:", error);
+      }
+    } else {
+      console.log('Nodo NO encontrado en el DOM, cargando desde API con caché');
+      // Cargar con sistema de caché mejorado
+      const data = await loadToggleDataWithCache(nodeId);
+      
+      // Igual que antes, mostrar según el tipo de contenido
+      if (data.title && data.title.trim().startsWith('*') || (data.items && data.items.length > 0)) {
+        await loadGallery(data);
+      } else if (data.children && data.children.length > 0) {
+        await loadToggleCards(data);
+      } else {
+        clearGallery();
+      }
+      
+      // Guarda el ID en el estado
+      selectedNodeId = nodeId;
+      saveTreeState();
+      
+      // Actualiza la selección visual si es posible
+      updateSelectedNodeVisually(nodeId);
+      
+      // Añade al historial del navegador si es necesario
+      if (addToHistory) {
+        const title = getNodeTitle(nodeId) || 'Contenido';
+        window.history.pushState({ nodeId: nodeId }, title, `#node=${nodeId}`);
+      }
+    }
+  } catch (error) {
+    console.error("Error al cargar el nodo por ID:", error);
+  }
+}
+
+// Encuentra un elemento de nodo por ID - VERSIÓN MEJORADA
+function findNodeElementById(nodeId) {
+  console.log('Buscando nodo con ID:', nodeId);
+  
+  // Buscar en la estructura de árbol
+  const nodes = document.querySelectorAll('.tree-node[data-id="' + nodeId + '"]');
+  if (nodes.length > 0) {
+    console.log('Nodo encontrado en el árbol');
+    return nodes[0];
+  }
+  
+  // Buscar en los botones de raíz (si tienen data-id)
+  const rootButtons = document.querySelectorAll('.tree-root-btn[data-id="' + nodeId + '"]');
+  if (rootButtons.length > 0) {
+    console.log('Nodo encontrado en botones de raíz');
+    return rootButtons[0];
+  }
+  
+  console.log('Nodo no encontrado en el DOM');
+  return null;
+}
+
+// Obtiene el título de un nodo por ID (desde caché si está disponible)
+// Función mejorada para obtener el título de un nodo
+function getNodeTitle(nodeId) {
+  // 1. Intentar obtener desde caché global (si existe)
+  if (window.titleCache && window.titleCache[nodeId]) {
+    console.log(`Título obtenido de cache global: ${window.titleCache[nodeId]}`);
+    return window.titleCache[nodeId];
+  }
+  
+  // 2. Buscar en treeCache
+  if (treeCache[nodeId]) {
+    const title = treeCache[nodeId].title || 'Sin título';
+    // Guardar en caché global
+    if (!window.titleCache) window.titleCache = {};
+    window.titleCache[nodeId] = title;
+    console.log(`Título obtenido de treeCache: ${title}`);
+    return title;
+  }
+  
+  // 3. Buscar en elementos DOM
+  const nodeElement = findNodeElementById(nodeId);
+  if (nodeElement) {
+    let title;
+    
+    if (nodeElement.classList.contains('tree-root-btn')) {
+      title = nodeElement.title || nodeElement.textContent.trim();
+    } else {
+      title = nodeElement.textContent.trim();
+      
+      // Si tiene un icono de carpeta, extraer solo el texto
+      const folderIcon = nodeElement.querySelector('.tree-folder-icon');
+      if (folderIcon) {
+        const nodeContents = Array.from(nodeElement.childNodes);
+        const textNodes = nodeContents.filter(node => node.nodeType === 3);
+        if (textNodes.length > 0) {
+          title = textNodes[textNodes.length - 1].textContent.trim();
+        }
+      }
+    }
+    
+    // Guardar en caché global
+    if (!window.titleCache) window.titleCache = {};
+    window.titleCache[nodeId] = title;
+    console.log(`Título obtenido del DOM: ${title}`);
+    return title;
+  }
+  
+  // 4. Si todo falla, intentar cargar desde localStorage
+  try {
+    const cachedData = getCachedData(nodeId);
+    if (cachedData && cachedData.title) {
+      const title = cachedData.title;
+      // Guardar en caché global
+      if (!window.titleCache) window.titleCache = {};
+      window.titleCache[nodeId] = title;
+      console.log(`Título obtenido de localStorage: ${title}`);
+      return title;
+    }
+  } catch (e) {
+    console.warn('Error al obtener título de localStorage:', e);
+  }
+  
+  // 5. Usar el título actual si existe
+  if (window.currentPageTitle) {
+    return window.currentPageTitle;
+  }
+  
+  // Si nada funciona, devolver 'Contenido'
+  console.log('Título no encontrado, usando "Contenido"');
+  return 'Contenido';
+}
+
+// Actualiza visualmente el nodo seleccionado
+function updateSelectedNodeVisually(nodeId) {
+  // Quitar selección actual
+  document.querySelectorAll('.tree-node.selected').forEach(node => {
+    node.classList.remove('selected');
+  });
+  
+  // Buscar y seleccionar el nodo por ID
+  const nodeElement = findNodeElementById(nodeId);
+  if (nodeElement) {
+    nodeElement.classList.add('selected');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Cargar los botones de raíz
+  loadRootTreeButtons();
+  
+  // Inicializar sistema de navegación con historial
+  setupHistoryNavigation();
+  
+  // Verificar si hay un nodo en la URL al cargar la página
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#node=')) {
+    const nodeId = hash.substring(6); // Extraer el ID después de '#node='
+    console.log('URL inicial con nodo:', nodeId);
+    
+    // Cargar el nodo después de que el árbol esté disponible
+    setTimeout(async () => {
+      try {
+        await loadNodeById(nodeId, false);
+      } catch (e) {
+        console.error('Error cargando nodo inicial:', e);
+      }
+    }, 800); // Un poco más de tiempo para asegurar que todo está cargado
+  }
+  
+  // Resto del código existente...
+});
+
+// Función para manejar tooltips de videos
+function setupVideoTooltips() {
+  // Seleccionar todos los videos
+  const videos = document.querySelectorAll('#gallery video');
+  
+  videos.forEach(video => {
+    // Verificar si tiene tooltip
+    const tooltip = video.nextElementSibling;
+    if (tooltip && tooltip.classList.contains('custom-tooltip')) {
+      // Timer para ocultar tooltip después de 5 segundos
+      setTimeout(() => {
+        tooltip.classList.add('tooltip-auto-hide');
+      }, 5000);
+      
+      // Resetear visibilidad cuando el mouse entra de nuevo
+      video.addEventListener('mouseenter', () => {
+        tooltip.classList.remove('tooltip-auto-hide');
+        
+        // Reiniciar timer
+        setTimeout(() => {
+          tooltip.classList.add('tooltip-auto-hide');
+        }, 5000);
+      });
+    }
+  });
+}
+
+// Llamar a la función después de cargar la galería
+const originalLoadGallery = loadGallery;
+loadGallery = async function(toggle) {
+  await originalLoadGallery(toggle);
+  setupVideoTooltips();
+  
+  // Actualizar el título del nivel actual
+  if (toggle && toggle.title) {
+    updateCurrentLevelTitle(toggle.title);
+  }
+};
+
+// Función mejorada para temporizar correctamente el título
+function updateCurrentLevelTitle(title, forceShow = false) {
+  // Si no hay título, usar 'Inicio'
+  if (!title || title === 'undefined') {
+    title = 'Inicio';
+  }
+  
+  // Eliminar el asterisco si existe
+  if (title && title.startsWith('*')) {
+    title = title.substring(1).trim();
+  }
+  
+  const titleElement = document.getElementById('currentLevelTitle');
+  if (!titleElement) return;
+  
+  // Guardar el título en una variable global para referencia futura
+  window.currentPageTitle = title;
+  
+  // Mostrar el título
+  titleElement.textContent = title;
+  titleElement.style.display = 'block';
+  titleElement.classList.remove('hidden', 'fade-out');
+  titleElement.classList.add('fade-in');
+  
+  // IMPORTANTE: Siempre limpiar el temporizador anterior
+  if (window.levelTitleTimer) {
+    clearTimeout(window.levelTitleTimer);
+    window.levelTitleTimer = null;
+  }
+  
+  // IMPORTANTE: También limpiar cualquier temporizador secundario
+  if (window.levelTitleSecondaryTimer) {
+    clearTimeout(window.levelTitleSecondaryTimer);
+    window.levelTitleSecondaryTimer = null;
+  }
+  
+  // Configurar temporizador para ocultar después de 5 segundos
+  // Siempre se ocultará a menos que forceShow sea true
+  if (!forceShow) {
+    window.levelTitleTimer = setTimeout(() => {
+      if (titleElement) {
+        titleElement.classList.remove('fade-in');
+        titleElement.classList.add('fade-out');
+        
+        // Usar un nombre diferente para el segundo temporizador para evitar confusiones
+        window.levelTitleSecondaryTimer = setTimeout(() => {
+          if (titleElement) {
+            titleElement.classList.remove('fade-out');
+            titleElement.classList.add('hidden');
+          }
+        }, 300); // 300ms para la animación de fade-out
+      }
+    }, 5000); // 5 segundos para mostrar el título
+  }
+}
+// Importante: Asegurarse de llamar a updateCurrentLevelTitle desde loadNodeById
+const originalLoadNodeById = loadNodeById;
+loadNodeById = async function(nodeId, addToHistory = true) {
+  const result = await originalLoadNodeById(nodeId, addToHistory);
+  
+  // Actualizar título basado en el nodo cargado
+  const title = getNodeTitle(nodeId);
+  updateCurrentLevelTitle(title);
+  
+  return result;
+};
+
+// También añadir estas llamadas a las funciones de setupHistoryNavigation
+// Modifica la parte de popstate en setupHistoryNavigation
+window.addEventListener('popstate', async function(event) {
+  console.log('Navegación detectada:', event.state);
+  
+  // Si no hay estado, podría ser la página inicial
+  if (!event.state) {
+    // Si hay un hash en la URL, intentar cargar ese nodo
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#node=')) {
+      const nodeId = hash.substring(6); // Extraer el ID después de '#node='
+      console.log('Cargando desde hash:', nodeId);
+      await loadNodeById(nodeId, false);
+      // Mostrar el título del nivel al navegar por hash
+      updateCurrentLevelTitle(getNodeTitle(nodeId));
+      return;
+    }
+    
+    // Si no hay hash, volver a la página inicial
+    console.log('Volviendo a página inicial');
+    clearGallery();
+    updateCurrentLevelTitle('Inicio'); // Mostrar título en la página inicial
+    return;
+  }
+  
+  // Si hay estado, cargar ese nodo
+  if (event.state.nodeId) {
+    console.log('Cargando nodo:', event.state.nodeId);
+    await loadNodeById(event.state.nodeId, false);
+    // Mostrar el título del nivel al navegar por historial
+    updateCurrentLevelTitle(getNodeTitle(event.state.nodeId));
+  }
+});
+
+// También actualizar cuando se hace clic en un botón de raíz
+document.addEventListener('DOMContentLoaded', function() {
+  // Observar clicks en los botones de raíz
+  document.body.addEventListener('click', function(e) {
+    if (e.target.classList.contains('tree-root-btn')) {
+      updateCurrentLevelTitle(e.target.title || 'Inicio');
+    }
+  });
+  
+  // Observar clicks en los nodos del árbol
+  document.body.addEventListener('click', function(e) {
+    const treeNode = e.target.closest('.tree-node');
+    if (treeNode) {
+      // Obtener el texto del nodo (sin los hijos)
+      let nodeText = treeNode.textContent.trim();
+      
+      // Si tiene un icono de carpeta, el texto está en el nodo de texto
+      const folderIcon = treeNode.querySelector('.tree-folder-icon');
+      if (folderIcon) {
+        // Extraer solo el texto después del icono
+        const nodeContents = Array.from(treeNode.childNodes);
+        const textNodes = nodeContents.filter(node => node.nodeType === 3); // Nodos de texto
+        if (textNodes.length > 0) {
+          nodeText = textNodes[textNodes.length - 1].textContent.trim();
+        }
+      }
+      
+      updateCurrentLevelTitle(nodeText);
+    }
+  });
+  
+  // También en los botones de navegación de las cards
+  document.body.addEventListener('click', function(e) {
+    const navButton = e.target.closest('.gallery-nav-button');
+    if (navButton) {
+      updateCurrentLevelTitle(navButton.textContent.trim());
+    }
+  });
+});
+
+
+// Actualiza loadToggleCards para usar caché
+async function loadToggleCards(data) {
+  const gallery = document.getElementById('gallery');
+  
+  // Limpieza segura primero
+  if (macyInstance) {
+    macyInstance.remove(true);
+    macyInstance = null;
+  }
+
+  safeDestroyLightGallery();
+  
+  gallery.style.visibility = 'hidden';
+  gallery.innerHTML = "";
+  
+  if (data.children && data.children.length > 0) {
+    // Creamos cards para cada hijo en el toggle list
+    data.children.forEach(child => {
+      const buttonCard = document.createElement('div');
+      buttonCard.className = 'card gallery-button-card';
+      
+      const button = document.createElement('button');
+      button.className = 'gallery-nav-button';
+      button.textContent = child.title.trim().startsWith('*') 
+        ? child.title.trim().substring(1).trim()
+        : child.title.trim();
+      
+      button.addEventListener('click', async () => {
+        let childData = child;
+        if (!child.items) {
+          try {
+            // Usar la función mejorada con caché
+            childData = await loadToggleDataWithCache(child.id);
+          } catch (error) {
+            console.error("Error al cargar el nodo hijo:", error);
+            return;
+          }
+        }
+
+          // Actualizar el título explícitamente aquí también
+          const displayTitle = child.title.trim().startsWith('*') 
+          ? child.title.trim().substring(1).trim()
+          : child.title.trim();
+        updateCurrentLevelTitle(displayTitle, true);
+        
+        // El resto igual
+        if (child.title.trim().startsWith('*') || !childData.children || childData.children.length === 0) {
+          await loadGallery(childData);
+          
+          const title = child.title.trim().startsWith('*') 
+            ? child.title.trim().substring(1).trim()
+            : child.title.trim();
+          window.history.pushState({ nodeId: child.id }, title, `#node=${child.id}`);
+        } else {
+          await loadToggleCards(childData);
+          
+          const title = child.title.trim();
+          window.history.pushState({ nodeId: child.id }, title, `#node=${child.id}`);
+        }
+      });
+      
+      buttonCard.appendChild(button);
+      gallery.appendChild(buttonCard);
+    });
+    
+    // Inicializamos Macy para organizar las cards
+    setTimeout(() => {
+      initializeMacy();
+      gallery.style.visibility = 'visible';
+    }, 100);
+  } else {
+    // Si no hay hijos, mostramos el contenido directamente
+    await loadGallery(data);
+  }
+}
+
+  </script>
+
+<script>
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+</script>
+
+<script src="js/main.js"></script>
+
+<div class="container_logo">
+  <nav>
+    <img src="img/logo.gif" alt="Logo" id="logo">
+  </nav>
+</div>
+
+<div id="textModal" class="text-modal">
+  <div class="text-modal-header">
+    <div class="text-modal-nav">
+      <button id="prevTextBtn" disabled>&laquo; Anterior</button>
+      <button id="nextTextBtn" disabled>Siguiente &raquo;</button>
+    </div>
+    <span class="text-modal-close">&times;</span>
+  </div>
+  <div class="text-modal-content">
+    <div id="textModalContent"></div>
+  </div>
+</div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+

@@ -1,0 +1,847 @@
+/**
+ * PARTE 4: Modal de Upload y Estilos Responsive
+ */
+
+/* ========================================
+   UPLOAD MODAL
+   ======================================== */
+
+.upload-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.upload-modal.hidden {
+  display: none;
+}
+
+.upload-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.upload-modal-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  animation: uploadModalFadeIn 0.3s ease;
+}
+
+@keyframes uploadModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Split Layout for Upload Modal */
+.upload-modal-content.split-layout {
+  flex-direction: row;
+  width: 900px;
+  max-width: 95vw;
+  height: 85vh;
+  max-height: 800px;
+  padding: 0;
+  background: #121212;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+}
+
+/* ========================================
+   UPLOAD MODAL HEADER
+   ======================================== */
+
+.upload-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.upload-modal-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.upload-modal-header p {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 4px 0 0;
+}
+
+.upload-modal-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 10px;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.upload-modal-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ========================================
+   SIDEBAR IZQUIERDO (Árbol)
+   ======================================== */
+
+.upload-sidebar {
+  width: 35%;
+  background: rgba(0,0,0,0.3);
+  border-right: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.upload-sidebar-header h3 {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.upload-tree-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+/* Nodos del Árbol */
+.upload-tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #9ca3af;
+  transition: all 0.2s;
+  margin-bottom: 2px;
+}
+
+.upload-tree-node:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+}
+
+.upload-tree-node.selected {
+  background: rgba(0, 255, 252, 0.15);
+  color: #fff;
+  border: 1px solid rgba(0, 255, 252, 0.3);
+}
+
+/* Estado de carga del nodo */
+.upload-tree-node.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.upload-tree-node.loading .node-arrow svg {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.node-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.node-arrow {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+.node-arrow svg {
+  transition: transform 0.2s;
+}
+
+.node-icon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+}
+
+.upload-tree-node.selected .node-icon {
+  color: #00fffc;
+}
+
+.node-title {
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.add-folder-btn {
+  opacity: 0;
+  padding: 4px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.upload-tree-node:hover .add-folder-btn,
+.upload-tree-node.selected .add-folder-btn {
+  opacity: 1;
+}
+
+.add-folder-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Input nueva carpeta inline */
+.new-folder-form {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0 4px 24px;
+}
+
+.new-folder-input {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+.new-folder-input:focus {
+  outline: none;
+  border-color: rgba(0, 255, 252, 0.5);
+}
+
+/* Children container */
+.children-container {
+  margin-left: 16px;
+}
+
+.children-container.hidden {
+  display: none;
+}
+
+/* ========================================
+   ÁREA PRINCIPAL DERECHA
+   ======================================== */
+
+.upload-main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.upload-main-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upload-main-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.upload-close-btn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.upload-close-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.upload-close-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.upload-body-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========================================
+   TABS MODERNOS
+   ======================================== */
+
+.upload-tabs-modern {
+  display: flex;
+  background: rgba(0,0,0,0.4);
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.upload-tab-modern {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.upload-tab-modern svg {
+  width: 16px;
+  height: 16px;
+}
+
+.upload-tab-modern.active {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Upload View */
+.upload-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-view.hidden {
+  display: none;
+}
+
+/* ========================================
+   DROPZONE MODERNO
+   ======================================== */
+
+.upload-dropzone-modern {
+  border: 2px dashed rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.02);
+}
+
+.upload-dropzone-modern:hover,
+.upload-dropzone-modern.dragover {
+  border-color: rgba(0, 255, 252, 0.5);
+  background: rgba(0, 255, 252, 0.05);
+}
+
+.dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.dropzone-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+}
+
+.upload-dropzone-modern:hover .dropzone-icon {
+  color: #00fffc;
+  background: rgba(0, 255, 252, 0.1);
+  transform: scale(1.1);
+}
+
+.dropzone-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.dropzone-content p {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.upload-dropzone-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #4b5563;
+  font-size: 0.75rem;
+}
+
+/* ========================================
+   PREVIEW GRID
+   ======================================== */
+
+.upload-grid-modern {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.upload-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.upload-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.upload-preview-item img,
+.upload-preview-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-preview-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.upload-preview-item:hover .upload-preview-remove {
+  opacity: 1;
+}
+
+.upload-preview-remove:hover {
+  background: #ef4444;
+}
+
+.upload-preview-remove svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ========================================
+   URL INPUT
+   ======================================== */
+
+.url-input-wrapper {
+  position: relative;
+}
+
+.url-input-wrapper svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #6b7280;
+}
+
+.url-input-wrapper input {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 12px 12px 12px 40px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.url-input-wrapper input:focus {
+  outline: none;
+  border-color: rgba(0, 255, 252, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 255, 252, 0.1);
+}
+
+.url-input-wrapper input::placeholder {
+  color: #4b5563;
+}
+
+/* ========================================
+   FORM INPUTS
+   ======================================== */
+
+.upload-form-group {
+  margin-bottom: 20px;
+}
+
+.upload-form-group label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.upload-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.upload-input:focus {
+  outline: none;
+  border-color: rgba(0, 255, 252, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 255, 252, 0.1);
+}
+
+.upload-input::placeholder {
+  color: #4b5563;
+}
+
+/* Select */
+.upload-destination-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.upload-select {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.upload-select:focus {
+  outline: none;
+  border-color: rgba(0, 255, 252, 0.5);
+}
+
+.upload-select option {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+/* ========================================
+   FOOTER Y BOTÓN SUBMIT
+   ======================================== */
+
+.upload-footer {
+  padding: 20px 24px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  background: rgba(0,0,0,0.2);
+}
+
+.upload-submit-modern {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #00fffc 0%, #00d4aa 100%);
+  border: none;
+  border-radius: 12px;
+  color: #000;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.upload-submit-modern:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 255, 252, 0.3);
+}
+
+.upload-submit-modern:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #4b5563;
+  color: #9ca3af;
+}
+
+.upload-submit-modern svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ========================================
+   OVERLAY DE PROGRESO/ÉXITO
+   ======================================== */
+
+.upload-status-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.upload-status-overlay.hidden {
+  display: none;
+}
+
+.status-content {
+  text-align: center;
+  padding: 40px;
+}
+
+.status-content h3 {
+  color: #fff;
+  margin: 20px 0 16px;
+  font-size: 1.1rem;
+}
+
+/* Spinner moderno */
+.spinner-modern {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #00fffc;
+  border-radius: 50%;
+  animation: spinModern 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spinModern {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Barra de progreso moderna */
+.progress-bar-modern {
+  width: 200px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.progress-fill-modern {
+  height: 100%;
+  background: linear-gradient(90deg, #00fffc, #00d4aa);
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* Mensaje de éxito */
+.upload-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-success.hidden {
+  display: none;
+}
+
+.success-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(34, 197, 94, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #22c55e;
+}
+
+.success-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* ========================================
+   RESPONSIVE - UPLOAD MODAL
+   ======================================== */
+
+@media (max-width: 768px) {
+  .upload-modal-content.split-layout {
+    flex-direction: column;
+    width: 95vw;
+    height: 90vh;
+    max-height: none;
+  }
+
+  .upload-sidebar {
+    width: 100%;
+    height: 40%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .upload-main-area {
+    height: 60%;
+  }
+
+  .upload-grid-modern {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .upload-preview-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .upload-dropzone-modern {
+    padding: 24px;
+  }
+
+  .dropzone-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-modal {
+    padding: 10px;
+  }
+
+  .upload-modal-content.split-layout {
+    width: 100%;
+    height: 95vh;
+    border-radius: 12px;
+  }
+
+  .upload-sidebar {
+    height: 35%;
+  }
+
+  .upload-main-area {
+    height: 65%;
+  }
+
+  .upload-body-content {
+    padding: 16px;
+  }
+
+  .upload-main-header {
+    padding: 16px;
+  }
+
+  .upload-grid-modern,
+  .upload-preview-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .upload-tabs-modern {
+    margin-bottom: 16px;
+  }
+
+  .upload-tab-modern {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .upload-footer {
+    padding: 16px;
+  }
+
+  .upload-submit-modern {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+}

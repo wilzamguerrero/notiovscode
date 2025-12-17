@@ -1,0 +1,768 @@
+/**
+ * PARTE 1: Estilos Base, Tipografía, Galería y Cards
+ */
+
+/* ========================================
+   RESET Y ESTILOS BASE
+   ======================================== */
+
+* {
+  margin: 2;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0f0f0f;
+  color: #e5e5e5;
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+a {
+  color: #00fffc;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #00d4aa;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ========================================
+   TIPOGRAFÍA
+   ======================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  color: #fff;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.1rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.9rem; }
+
+p {
+  margin-bottom: 1rem;
+}
+
+code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.9em;
+}
+
+pre {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+/* ========================================
+   GALERÍA PRINCIPAL
+   ======================================== */
+
+#gallery {
+  padding: 20px;
+  min-height: 100vh;
+  transition: opacity 0.15s ease;
+}
+
+#gallery .card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+/* Evitar el "flash" durante el recálculo de Macy */
+#gallery.macy-recalculating .card {
+  opacity: 0.8;
+}
+
+.gallery-with-sidebar #gallery {
+  padding: 20px;
+}
+
+/* ========================================
+   CARDS BASE
+   ======================================== */
+
+.card {
+  position: relative;
+  background: rgba(26, 26, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.card.hidden {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* ========================================
+   IMAGE CARDS
+   ======================================== */
+
+.card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  background-color: #1a1a1a;
+  transition: opacity 0.3s ease;
+}
+
+.card img[data-src] {
+  opacity: 0;
+}
+
+.card img:not([data-src]) {
+  opacity: 1;
+}
+
+.image-item {
+  display: block;
+  cursor: pointer;
+}
+
+/* ========================================
+   VIDEO CARDS
+   ======================================== */
+
+.card video {
+  width: 100%;
+  height: auto;
+  display: block;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-outer-container {
+  position: relative;
+  width: 100%;
+}
+
+/* ========================================
+   FILE CARDS
+   ======================================== */
+
+.file-card {
+  cursor: pointer;
+}
+
+.file-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.file-icon-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-type {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.file-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.file-link:hover .file-name {
+  color: #00fffc;
+}
+
+/* ========================================
+   CODE CARDS
+   ======================================== */
+
+.code-card {
+  cursor: pointer;
+}
+
+.code-wrapper {
+  padding: 16px;
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.code-language {
+  background: rgba(0, 255, 252, 0.15);
+  color: #00fffc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.code-title {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.code-preview {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: hidden;
+  max-height: 120px;
+}
+
+.code-preview code {
+  font-size: 0.8rem;
+  color: #d1d5db;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ========================================
+   EMBED CARDS
+   ======================================== */
+
+.embed-card {
+  overflow: hidden;
+}
+
+.embed-card .video-container {
+  border-radius: 0;
+}
+
+.embed-card .file-wrapper {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   TEXT BLOCKS (en galería)
+   ======================================== */
+
+.gallery-text-block {
+  background: rgba(26, 26, 26, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  color: #d1d5db;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gallery-text-block:hover {
+  background: rgba(40, 40, 40, 0.9);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.gallery-heading-block {
+  padding: 16px 20px;
+}
+
+.gallery-heading-block h1,
+.gallery-heading-block h2,
+.gallery-heading-block h3 {
+  margin: 0;
+}
+
+.gallery-heading-block h1 {
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, #00fffc, #00d4aa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gallery-heading-block h2 {
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.gallery-heading-block h3 {
+  font-size: 1.1rem;
+  color: #d1d5db;
+}
+
+/* ========================================
+   BUTTON CARDS (navegación)
+   ======================================== */
+
+.gallery-button-card {
+  background: rgba(26, 26, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 8px;
+  transition: all 0.2s ease;
+}
+
+.gallery-button-card:hover {
+  background: rgba(40, 40, 40, 0.9);
+  border-color: rgba(0, 255, 252, 0.3);
+}
+
+.gallery-nav-button {
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.gallery-nav-button:hover {
+  background: rgba(0, 255, 252, 0.1);
+  color: #00fffc;
+}
+
+/* ========================================
+   TOOLTIPS
+   ======================================== */
+
+.custom-tooltip {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 100;
+}
+
+.card:hover .custom-tooltip {
+  opacity: 1;
+}
+
+.custom-tooltip.tooltip-hide-on-click,
+.custom-tooltip.tooltip-auto-hide {
+  opacity: 0 !important;
+}
+
+/* ========================================
+   LAZY LOADING STATES
+   ======================================== */
+
+.card img.lazy-loading {
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.virtualized {
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ========================================
+   LIGHTGALLERY CUSTOMIZATION
+   ======================================== */
+
+.lg-backdrop {
+  background-color: rgba(0, 0, 0, 0.95);
+}
+
+.lg-toolbar {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.lg-sub-html {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  padding: 20px;
+}
+
+.lg-thumb-outer {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.lg-thumb-item {
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.lg-thumb-item.active,
+.lg-thumb-item:hover {
+  border-color: #00fffc;
+}
+
+/* ========================================
+   SCROLLBAR GLOBAL
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   SELECTION
+   ======================================== */
+
+::selection {
+  background: rgba(0, 255, 252, 0.3);
+  color: #fff;
+}
+
+::-moz-selection {
+  background: rgba(0, 255, 252, 0.3);
+  color: #fff;
+}
+
+/* ========================================
+   FOCUS STATES
+   ======================================== */
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(0, 255, 252, 0.5);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(0, 255, 252, 0.5);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   ANIMATIONS BASE
+   ======================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+.slide-in-up {
+  animation: slideInUp 0.3s ease forwards;
+}
+
+.slide-in-down {
+  animation: slideInDown 0.3s ease forwards;
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease forwards;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.hidden {
+  display: none !important;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* ========================================
+   RESPONSIVE BASE
+   ======================================== */
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.1rem; }
+
+  #gallery {
+    padding: 12px;
+  }
+
+  .card {
+    border-radius: 8px;
+  }
+
+  .gallery-text-block {
+    padding: 16px;
+    font-size: 0.9rem;
+  }
+
+  .file-wrapper {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .file-icon-img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .file-name {
+    font-size: 0.85rem;
+  }
+
+  .code-wrapper {
+    padding: 12px;
+  }
+
+  .code-preview {
+    max-height: 100px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  #gallery {
+    padding: 8px;
+  }
+
+  .card {
+    border-radius: 6px;
+  }
+
+  .gallery-text-block {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .gallery-nav-button {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .custom-tooltip {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .sidebar,
+  .sidebar-tab,
+  .upload-modal,
+  .control-buttons,
+  #neuro {
+    display: none !important;
+  }
+
+  .gallery-with-sidebar {
+    margin-left: 0;
+  }
+
+  .card {
+    break-inside: avoid;
+    border: 1px solid #ccc;
+  }
+}
