@@ -145,7 +145,7 @@ canvas#neuro {
 .column-options-row {
   display: flex;
   gap: 6px;
-  padding: 8px 0;
+  padding: 4px 0;
   justify-content: space-between;
 }
 
@@ -696,20 +696,21 @@ canvas#neuro {
   justify-content: center;
   gap: 8px;
   padding: 10px 16px;
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: linear-gradient(135deg, #00fffc, #00ff80);
   border: none;
   border-radius: 10px;
-  color: #fff;
+  color: #0a0a0a;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 255, 252, 0.3);
 }
 
 .open-upload-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+  box-shadow: 0 6px 16px rgba(0, 255, 252, 0.4);
+  filter: brightness(1.1);
 }
 
 .open-upload-btn svg {
@@ -898,10 +899,10 @@ canvas#neuro {
 .upload-here-btn {
   flex: 1;
   padding: 10px 16px;
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: linear-gradient(135deg, #00fffc, #00ff80);
   border: none;
   border-radius: 8px;
-  color: #fff;
+  color: #0a0a0a;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -913,6 +914,8 @@ canvas#neuro {
 }
 
 .upload-here-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 255, 252, 0.4);
   filter: brightness(1.1);
 }
 
@@ -924,8 +927,8 @@ canvas#neuro {
 .upload-here-btn .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #0a0a0a;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
