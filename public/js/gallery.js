@@ -6,16 +6,25 @@ let macyInstance = null;
 let forcedColumnCount = null;
 
 /**
- * Inicializar Macy para el layout de la galería
+ * Inicializar/reinicializar Macy con transición suave
  */
 function initializeMacy() {
-  if (macyInstance) macyInstance.remove(true);
-
+  const gallery = document.getElementById('gallery');
+  if (!gallery) return;
+  
+  // Añadir clase para indicar recálculo
+  gallery.classList.add('macy-recalculating');
+  
   let columns, breakAtConfig;
-  if (forcedColumnCount !== null) {
-    columns = forcedColumnCount;
-    breakAtConfig = {};
+  
+  // Obtener el valor de columnas forzado
+  const forcedCols = (typeof forcedColumnCount !== 'undefined') ? forcedColumnCount : window.forcedColumnCount;
+  
+  if (forcedCols !== null && forcedCols !== undefined) {
+    columns = forcedCols;
+    breakAtConfig = {}; // Sin breakpoints en modo forzado
   } else {
+    // Configuración responsive por defecto
     columns = 6;
     breakAtConfig = {
       1200: 3,
@@ -23,25 +32,33 @@ function initializeMacy() {
       480: 2
     };
   }
-
+  
+  // Si ya existe una instancia, destruirla
+  if (typeof macyInstance !== 'undefined' && macyInstance) {
+    try {
+      macyInstance.remove();
+    } catch (e) {
+      // Ignorar errores al destruir
+    }
+  }
+  
+  // Crear nueva instancia
   macyInstance = Macy({
     container: "#gallery",
     trueOrder: false,
     margin: { x: 16, y: 16 },
     columns: columns,
     breakAt: breakAtConfig,
-    waitForImages: false,
-    useOwnImageLoader: true
+    waitForImages: false
   });
-
+  
+  // Forzar recálculo y quitar clase
   setTimeout(() => {
-    macyInstance.recalculate(true);
-    document.getElementById('gallery').style.visibility = 'visible';
-  }, 100);
-
-  window.addEventListener('load', () => {
-    if (macyInstance) macyInstance.recalculate(true);
-  });
+    if (macyInstance) {
+      macyInstance.recalculate(true);
+    }
+    gallery.classList.remove('macy-recalculating');
+  }, 50);
 }
 
 /**

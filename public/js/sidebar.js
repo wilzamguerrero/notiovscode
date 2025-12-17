@@ -297,43 +297,56 @@ function initSidebarControls() {
   // Opciones de columnas con transición suave
   document.querySelectorAll('.column-options-row .column-opt').forEach(btn => {
     btn.addEventListener('click', () => {
-      const cols = parseInt(btn.getAttribute('data-columns'), 10);
+      const colsAttr = btn.getAttribute('data-columns');
       const gallery = document.getElementById('gallery');
       
-      // Marcar el seleccionado
+      // Quitar selección de todos los botones
       document.querySelectorAll('.column-options-row .column-opt').forEach(b => b.classList.remove('active'));
       
-      // Añadir clase de transición a las cards ANTES de cambiar columnas
-      if (gallery) {
-        gallery.style.opacity = '0.7';
-        gallery.style.transition = 'opacity 0.15s ease';
+      // Marcar el nuevo como activo
+      btn.classList.add('active');
+      
+      // Determinar el nuevo valor de columnas
+      let newColumnCount;
+      if (colsAttr === 'auto') {
+        newColumnCount = null;
+      } else {
+        newColumnCount = parseInt(colsAttr, 10);
       }
       
-      // Pequeño delay para que la transición sea visible
+      // Si es el mismo valor, no hacer nada
+      const currentValue = (typeof forcedColumnCount !== 'undefined') ? forcedColumnCount : window.forcedColumnCount;
+      if (newColumnCount === currentValue) {
+        return;
+      }
+      
+      // Ocultar galería con fade
+      if (gallery) {
+        gallery.style.transition = 'opacity 0.2s ease';
+        gallery.style.opacity = '0';
+      }
+      
+      // Esperar a que el fade termine antes de recalcular
       setTimeout(() => {
+        // Actualizar el valor de columnas
         if (typeof forcedColumnCount !== 'undefined') {
-          if (forcedColumnCount === cols) {
-            forcedColumnCount = null;
-          } else {
-            forcedColumnCount = cols;
-            btn.classList.add('active');
-          }
+          forcedColumnCount = newColumnCount;
         } else {
-          window.forcedColumnCount = cols;
-          btn.classList.add('active');
+          window.forcedColumnCount = newColumnCount;
         }
         
+        // Recalcular Macy
         if (typeof initializeMacy === 'function') {
           initializeMacy();
         }
         
-        // Restaurar opacidad después de que Macy recalcule
+        // Mostrar galería con fade después de que Macy recalcule
         setTimeout(() => {
           if (gallery) {
             gallery.style.opacity = '1';
           }
-        }, 50);
-      }, 150);
+        }, 100);
+      }, 200); // Esperar el fade out completo
     });
   });
 
