@@ -279,6 +279,7 @@ canvas#neuro {
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
+  position: relative;
 }
 
 .tree-node:hover {
@@ -541,9 +542,427 @@ canvas#neuro {
 .sidebar-logo,
 .sidebar-title,
 .sidebar-btn-primary,
-.sidebar-footer,
 .sidebar-logout-btn,
 .sidebar-controls-grid,
 .column-options-dropdown {
+  display: none !important;
+}
+/* ========================================
+   HEADER CON ACCIÓN
+   ======================================== */
+
+.sidebar-section-header.with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-header-btn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.sidebar-header-btn:hover {
+  color: #00fffc;
+  background: rgba(0, 255, 252, 0.1);
+}
+
+.sidebar-header-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ========================================
+   BOTÓN CREAR CARPETA EN NODOS DEL ÁRBOL
+   ======================================== */
+
+.tree-node-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tree-node:hover .tree-node-actions {
+  opacity: 1;
+}
+
+.tree-add-folder-btn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.tree-add-folder-btn:hover {
+  color: #00fffc;
+  background: rgba(0, 255, 252, 0.1);
+}
+
+.tree-add-folder-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Input inline para crear carpeta */
+.new-folder-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  margin: 2px 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  min-width: 0; /* Importante para que flex funcione bien */
+}
+
+.new-folder-inline input {
+  flex: 1;
+  min-width: 0; /* Permite que el input se encoja */
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.new-folder-inline input::placeholder {
+  color: #6b7280;
+}
+
+.new-folder-inline-btn {
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  flex-shrink: 0; /* Evita que los botones se encojan */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.new-folder-inline-btn.confirm {
+  color: #00fffc;
+}
+
+.new-folder-inline-btn.confirm:hover {
+  background: rgba(0, 255, 252, 0.2);
+}
+
+.new-folder-inline-btn.cancel:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.new-folder-inline-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.new-folder-inline-btn.loading svg {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ========================================
+   SIDEBAR FOOTER
+   ======================================== */
+
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.open-upload-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.open-upload-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+}
+
+.open-upload-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sidebar-footer-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebar-footer-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.sidebar-footer-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ========================================
+   PANEL DE UPLOAD INTEGRADO
+   ======================================== */
+
+.sidebar-upload-panel {
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.2s ease;
+}
+
+.sidebar-upload-panel.hidden {
+  display: none;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tabs del panel */
+.upload-panel-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 12px;
+}
+
+.upload-panel-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-panel-tab:hover {
+  color: #9ca3af;
+}
+
+.upload-panel-tab.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.upload-panel-tab svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Contenido del panel */
+.upload-panel-content {
+  margin-bottom: 12px;
+}
+
+.upload-panel-tab-content {
+  display: block;
+}
+
+.upload-panel-tab-content.hidden {
+  display: none;
+}
+
+/* Botón seleccionar archivos */
+.select-files-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.select-files-btn:hover {
+  border-color: rgba(0, 255, 252, 0.4);
+  color: #00fffc;
+  background: rgba(0, 255, 252, 0.05);
+}
+
+.select-files-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.select-files-btn .files-count {
+  color: #00fffc;
+  font-weight: 600;
+}
+
+/* Input de URL */
+.link-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.link-input-wrapper svg {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+}
+
+.link-input-wrapper input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.link-input-wrapper input::placeholder {
+  color: #6b7280;
+}
+
+.link-input-wrapper input:focus {
+  border-color: rgba(0, 255, 252, 0.5);
+}
+
+/* Acciones del panel */
+.upload-panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.upload-here-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.upload-here-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.upload-here-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload-here-btn .spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.upload-here-btn .spinner.hidden {
+  display: none;
+}
+
+.cancel-upload-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-upload-btn:hover {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #f87171;
+}
+
+.cancel-upload-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ========================================
+   OCULTAR BOTÓN UPLOAD VIEJO
+   ======================================== */
+
+#openUploadBtn {
   display: none !important;
 }

@@ -7,15 +7,15 @@ document.addEventListener('DOMContentLoaded', async function() {
   const isAuth = await requireAuth();
   if (!isAuth) return;
 
-  // Inicializar el sidebar
+  // Inicializar el sidebar (ahora incluye el panel de upload)
   if (typeof initSidebar === 'function') {
     initSidebar();
   }
 
-  // Inicializar sistema de upload
-  if (typeof initUploadSystem === 'function') {
-    initUploadSystem();
-  }
+  // Ya no necesitamos inicializar el sistema de upload modal
+  // if (typeof initUploadSystem === 'function') {
+  //   initUploadSystem();
+  // }
 
   // Cargar el árbol en el sidebar
   try {
@@ -38,22 +38,13 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (typeof setupHistoryNavigation === 'function') {
     setupHistoryNavigation();
   }
-  
-  // Verificar si hay un nodo en la URL al cargar la página
-  const hash = window.location.hash;
-  if (hash && hash.startsWith('#node=')) {
-    const nodeId = hash.substring(6);
-    console.log('URL inicial con nodo:', nodeId);
-    
-    setTimeout(async () => {
-      try {
-        if (typeof loadNodeById === 'function') {
-          await loadNodeById(nodeId, false);
-        }
-      } catch (e) {
-        console.error('Error cargando nodo inicial:', e);
-      }
-    }, 800);
+
+  // Si hay un hash en la URL, cargar ese nodo
+  if (window.location.hash.startsWith('#node=')) {
+    const nodeId = window.location.hash.replace('#node=', '');
+    if (nodeId && typeof loadNodeById === 'function') {
+      await loadNodeById(nodeId);
+    }
   }
 });
 

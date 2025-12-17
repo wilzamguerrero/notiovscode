@@ -2,19 +2,35 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Login - wilzamguerrero</title>
+  <title>Login - NotioPin</title>
   <link rel='shortcut icon' type='image/x-icon' href='favicon.svg' />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css" />
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
     .login-container {
-      min-height: 100vh;
+      width: 100%;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #0f0f0f;
       position: relative;
       overflow: hidden;
+      margin: 0;
+      padding: 20px;
     }
 
     .login-bg-gradient-1 {
@@ -43,10 +59,10 @@
       z-index: 10;
       width: 100%;
       max-width: 420px;
-      padding: 2.5rem;
+      padding: 2rem;
       background: rgba(26, 26, 26, 0.5);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: none;
       border-radius: 16px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       animation: fadeInUp 0.5s ease-out;
@@ -86,14 +102,8 @@
       font-weight: 700;
       color: #fff;
       text-align: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .login-subtitle {
-      color: #9ca3af;
-      font-size: 0.875rem;
-      text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
+      font-family: sans-serif;
     }
 
     .form-group {
@@ -114,16 +124,7 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-left: 0.25rem;
-    }
-
-    .form-link {
-      font-size: 0.625rem;
-      color: #00fffc;
-      text-decoration: none;
-    }
-
-    .form-link:hover {
-      text-decoration: underline;
+      font-family: sans-serif;
     }
 
     .form-input-wrapper {
@@ -150,6 +151,7 @@
       font-size: 0.875rem;
       transition: all 0.2s;
       box-sizing: border-box;
+      font-family: sans-serif;
     }
 
     .form-input::placeholder {
@@ -167,35 +169,7 @@
       color: #4b5563;
       margin-top: 0.25rem;
       margin-left: 0.25rem;
-    }
-
-    .info-box {
-      background: rgba(234, 179, 8, 0.1);
-      border: 1px solid rgba(234, 179, 8, 0.2);
-      border-radius: 8px;
-      padding: 0.75rem;
-      display: flex;
-      gap: 0.75rem;
-      align-items: flex-start;
-      margin-bottom: 1rem;
-    }
-
-    .info-box-icon {
-      width: 20px;
-      height: 20px;
-      color: #eab308;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .info-box-text {
-      font-size: 0.6875rem;
-      color: #9ca3af;
-      line-height: 1.5;
-    }
-
-    .info-box-text strong {
-      color: #fff;
+      font-family: sans-serif;
     }
 
     .error-box {
@@ -208,6 +182,7 @@
       text-align: center;
       margin-bottom: 1rem;
       display: none;
+      font-family: sans-serif;
     }
 
     .error-box.show {
@@ -229,6 +204,7 @@
       justify-content: center;
       gap: 0.5rem;
       transition: all 0.2s;
+      font-family: sans-serif;
     }
 
     .login-btn:hover:not(:disabled) {
@@ -258,55 +234,14 @@
       display: inline;
     }
 
+    .login-btn.loading .btn-arrow {
+      display: none;
+    }
+
     .btn-loading {
       display: none;
     }
 
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: 1.5rem 0;
-    }
-
-    .divider-line {
-      flex: 1;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .divider-text {
-      padding: 0 1rem;
-      color: #6b7280;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-    }
-
-    .demo-btn {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      background: transparent;
-      color: #9ca3af;
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .demo-btn:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-    }
-
-    .login-footer {
-      margin-top: 2rem;
-      text-align: center;
-      font-size: 0.75rem;
-      color: #4b5563;
-    }
-
-    /* Spinner */
     .spinner {
       width: 16px;
       height: 16px;
@@ -338,8 +273,7 @@
         </svg>
       </div>
 
-      <h1 class="login-title">wilzamguerrero</h1>
-      <p class="login-subtitle">Conecta tu espacio de Notion</p>
+      <h1 class="login-title">NotioPin</h1>
 
       <form id="loginForm">
         <div class="form-group">
@@ -361,21 +295,10 @@
           <p class="form-hint">Formato: ID_DE_PAGINA_secret_xxxx...</p>
         </div>
 
-        <div class="info-box">
-          <svg class="info-box-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <p class="info-box-text">
-            <strong>Importante:</strong> Debes hacer clic en el menú <strong>...</strong> de tu página de Notion, seleccionar <strong>Conexiones</strong> y agregar tu integración para que esto funcione.
-          </p>
-        </div>
-
         <div id="errorBox" class="error-box"></div>
 
         <button type="submit" id="loginBtn" class="login-btn">
-          <span class="btn-text">Conectar Workspace</span>
+          <span class="btn-text">Conectar</span>
           <span class="btn-loading"><span class="spinner"></span> Conectando...</span>
           <svg class="btn-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -383,22 +306,15 @@
           </svg>
         </button>
       </form>
-
-      <p class="login-footer">
-        Tus credenciales se almacenan solo en tu navegador
-      </p>
     </div>
   </div>
 
   <script>
-    // Extraer Page ID de URL o texto
     function extractPageId(input) {
-      // Si es una URL completa de Notion
       if (input.includes('notion.so') || input.includes('notion.site')) {
-        // Intentar extraer el ID de diferentes formatos de URL
         const patterns = [
-          /([a-f0-9]{32})/i,  // ID sin guiones
-          /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i  // UUID con guiones
+          /([a-f0-9]{32})/i,
+          /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i
         ];
         
         for (const pattern of patterns) {
@@ -409,11 +325,9 @@
         }
       }
       
-      // Si ya es un ID, limpiarlo
       return input.replace(/-/g, '').trim();
     }
 
-    // Verificar si ya hay una sesión válida
     async function checkExistingSession() {
       const sessionId = sessionStorage.getItem('notionSessionId');
       if (!sessionId) return false;
@@ -436,7 +350,6 @@
       }
     }
 
-    // Manejar login
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -450,8 +363,6 @@
         return;
       }
 
-      // Lógica de separación (PageID_Token)
-      // Usamos el primer guion bajo como separador
       const parts = credentials.split('_');
       
       if (parts.length < 2) {
@@ -461,20 +372,15 @@
       }
 
       const pageIdRaw = parts[0].trim();
-      // Unimos el resto por si el token contiene guiones bajos (ej: secret_...)
       const notionSecret = parts.slice(1).join('_').trim();
-      
-      // Limpiar ID (quitar guiones si los tiene el usuario en la primera parte)
       const pageId = pageIdRaw.replace(/-/g, '');
 
-      // Validar formato básico
       if (!notionSecret.startsWith('secret_') && !notionSecret.startsWith('ntn_')) {
         errorBox.textContent = 'El token debe comenzar con "secret_" o "ntn_"';
         errorBox.classList.add('show');
         return;
       }
 
-      // Mostrar loading
       btn.classList.add('loading');
       btn.disabled = true;
       errorBox.classList.remove('show');
@@ -489,10 +395,7 @@
         const data = await res.json();
 
         if (data.success) {
-          // Guardar sesión (ahora es el token stateless)
           sessionStorage.setItem('notionSessionId', data.sessionId);
-          
-          // Redirigir a la app principal
           window.location.href = '/';
         } else {
           errorBox.textContent = data.error || 'Error de conexión';
@@ -507,7 +410,6 @@
       }
     });
 
-    // Verificar sesión existente al cargar
     checkExistingSession();
   </script>
 </body>

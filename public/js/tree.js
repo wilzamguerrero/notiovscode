@@ -85,6 +85,29 @@ function createTreeNode(item) {
   span.appendChild(iconSvg);
   span.appendChild(document.createTextNode(displayTitle));
 
+  // Botón para crear subcarpeta
+  const actionsDiv = document.createElement('div');
+  actionsDiv.className = 'tree-node-actions';
+  
+  const addFolderBtn = document.createElement('button');
+  addFolderBtn.className = 'tree-add-folder-btn';
+  addFolderBtn.title = 'Nueva subcarpeta';
+  addFolderBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      <line x1="12" y1="11" x2="12" y2="17"/>
+      <line x1="9" y1="14" x2="15" y2="14"/>
+    </svg>
+  `;
+  
+  addFolderBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showInlineNewFolder(li, item.id);
+  });
+  
+  actionsDiv.appendChild(addFolderBtn);
+  span.appendChild(actionsDiv);
+
   if (item.id === selectedNodeId) span.classList.add('selected');
 
   span.addEventListener('click', async function (event) {
@@ -155,23 +178,205 @@ function createTreeNode(item) {
       saveTreeState();
     }
 
-    // Actualizar historial
-    const title = displayTitle || 'Contenido';
-    window.history.pushState({ nodeId: nodeId }, title, `#node=${nodeId}`);
-
-    treeContainer.classList.remove('loading-blur');
-    updateCurrentLevelTitle(displayTitle);
-  });
-
-  // Si debe estar expandido, expandir automáticamente
-  if (expandedNodes.includes(item.id)) {
-    setTimeout(async () => {
-      span.click();
+    window.history.pushState({ nodeId: item.id }, displayTitle, `#node=${item.id}`);
+    
+    setTimeout(() => {
+      treeContainer.classList.remove('loading-blur');
+      closeMenuPopover();
     }, 0);
-  }
+  });
 
   li.appendChild(span);
   return li;
+}
+
+/**
+ * Mostrar input inline para crear nueva carpeta
+ */
+function showInlineNewFolder(parentLi, parentId) {
+  // Verificar si ya existe un input
+  const existingInput = parentLi.querySelector('.new-folder-inline');
+  if (existingInput) {
+    existingInput.remove();
+    return;
+  }
+  
+  // Obtener o crear el ul de hijos
+  let childUl = parentLi.querySelector('ul');
+  if (!childUl) {
+    childUl = document.createElement('ul');
+    childUl.classList.add('child-tree');
+    parentLi.appendChild(childUl);
+  }
+  
+  // Asegurar que esté visible
+  childUl.classList.remove('collapsed');
+  const span = parentLi.querySelector('.tree-node');
+  if (span) span.classList.add('expanded');
+  
+  // Crear el formulario inline
+  const form = document.createElement('li');
+  form.className = 'new-folder-inline';
+  form.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:#6b7280;">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+    </svg>
+    <input type="text" placeholder="Nombre de carpeta..." autofocus />
+    <button class="new-folder-inline-btn confirm" title="Crear">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </button>
+    <button class="new-folder-inline-btn cancel" title="Cancelar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  `;
+  
+  // Insertar al inicio
+  childUl.insertBefore(form, childUl.firstChild);
+  
+  const input = form.querySelector('input');
+  const confirmBtn = form.querySelector('.confirm');
+  const cancelBtn = form.querySelector('.cancel');
+  
+  input.focus();
+  
+  const createFolder = async () => {
+    const name = input.value.trim();
+    if (!name) {
+      form.remove();
+      return;
+    }
+    
+    confirmBtn.classList.add('loading');
+    input.disabled = true;
+    
+    try {
+      const res = await authFetch('/api/create-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: name, parentId: parentId })
+      });
+      
+      if (!res.ok) throw new Error('Error creando carpeta');
+      
+      const result = await res.json();
+      
+      // Limpiar caché del padre
+      delete treeCache[parentId];
+      
+      // Crear el nuevo nodo
+      const newNode = createTreeNode({ id: result.id, title: name });
+      
+      // Reemplazar el formulario con el nuevo nodo
+      form.replaceWith(newNode);
+      
+    } catch (error) {
+      console.error('Error creando carpeta:', error);
+      alert('Error al crear la carpeta');
+      form.remove();
+    }
+  };
+  
+  confirmBtn.addEventListener('click', createFolder);
+  cancelBtn.addEventListener('click', () => form.remove());
+  
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') createFolder();
+    if (e.key === 'Escape') form.remove();
+  });
+}
+
+/**
+ * Inicializar botón para crear carpeta raíz
+ */
+function initRootFolderButton() {
+  const addRootBtn = document.getElementById('addRootFolderBtn');
+  if (addRootBtn) {
+    addRootBtn.addEventListener('click', () => {
+      showRootFolderInput();
+    });
+  }
+}
+
+/**
+ * Mostrar input para crear carpeta raíz
+ */
+function showRootFolderInput() {
+  const treeContainer = document.getElementById('customTree');
+  const ul = treeContainer.querySelector('ul') || treeContainer;
+  
+  // Verificar si ya existe
+  const existing = ul.querySelector('.new-folder-inline');
+  if (existing) {
+    existing.remove();
+    return;
+  }
+  
+  const form = document.createElement('li');
+  form.className = 'new-folder-inline';
+  form.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:#6b7280;">
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+    </svg>
+    <input type="text" placeholder="Nueva carpeta raíz..." autofocus />
+    <button class="new-folder-inline-btn confirm" title="Crear">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    </button>
+    <button class="new-folder-inline-btn cancel" title="Cancelar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  `;
+  
+  ul.insertBefore(form, ul.firstChild);
+  
+  const input = form.querySelector('input');
+  const confirmBtn = form.querySelector('.confirm');
+  const cancelBtn = form.querySelector('.cancel');
+  
+  input.focus();
+  
+  const createFolder = async () => {
+    const name = input.value.trim();
+    if (!name) {
+      form.remove();
+      return;
+    }
+    
+    confirmBtn.classList.add('loading');
+    input.disabled = true;
+    
+    try {
+      const res = await authFetch('/api/create-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: name })
+      });
+      
+      if (!res.ok) throw new Error('Error creando carpeta');
+      
+      const result = await res.json();
+      
+      // Limpiar caché del árbol
+      window.treeDataCache = null;
+      
+      // Crear el nuevo nodo
+      const newNode = createTreeNode({ id: result.id, title: name });
+      
+      form.replaceWith(newNode);
+      
+    } catch (error) {
+      console.error('Error creando carpeta:', error);
+      alert('Error al crear la carpeta');
+      form.remove();
+    }
+  };
+  
+  confirmBtn.addEventListener('click', createFolder);
+  cancelBtn.addEventListener('click', () => form.remove());
+  
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') createFolder();
+    if (e.key === 'Escape') form.remove();
+  });
 }
 
 /**
