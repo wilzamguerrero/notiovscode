@@ -167,6 +167,22 @@
   border: 1px solid rgba(0, 255, 252, 0.3);
 }
 
+/* Estado de carga del nodo */
+.upload-tree-node.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.upload-tree-node.loading .node-arrow svg {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .node-content {
   display: flex;
   align-items: center;
